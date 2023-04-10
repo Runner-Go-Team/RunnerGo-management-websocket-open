@@ -1,0 +1,6 @@
+2023-03-29T10:46:40.985+0800	INFO	handler/web_socket.go:120	建立链接成功
+2023-03-29T10:46:59.753+0800	INFO	handler/web_socket.go:125	接受消息--原始消息：1{
+    "route_url": "auto_plan_list",
+    "param": "{\"page\":1,\"size\":10,\"team_id\":\"da6b32b2-a78c-4068-a80b-a3ba157226a8\",\"plan_name\":\"\",\"start_time_sec\":0,\"end_time_sec\":0,\"task_type\":0,\"status\":0,\"sort\":0}"
+}
+2023-03-29T10:46:59.753+0800	INFO	handler/web_socket.go:137	接受消息--结构化：{auto_plan_list {"page":1,"size":10,"team_id":"da6b32b2-a78c-4068-a80b-a3ba157226a8","plan_name":"","start_time_sec":0,"end_time_sec":0,"task_type":0,"status":0,"sort":0}}

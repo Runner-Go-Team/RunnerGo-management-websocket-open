@@ -115,16 +115,22 @@ type Request struct {
 }
 
 type Auth struct {
-	Type     string    `json:"type"`
-	Kv       *KV       `json:"kv"`
-	Bearer   *Bearer   `json:"bearer"`
-	Basic    *Basic    `json:"basic"`
-	Digest   *Digest   `json:"digest"`
-	Hawk     *Hawk     `json:"hawk"`
-	Awsv4    *AwsV4    `json:"awsv4"`
-	Ntlm     *Ntlm     `json:"ntlm"`
-	Edgegrid *Edgegrid `json:"edgegrid"`
-	Oauth1   *Oauth1   `json:"oauth1"`
+	Type          string    `json:"type"`
+	Kv            *KV       `json:"kv"`
+	Bearer        *Bearer   `json:"bearer"`
+	Basic         *Basic    `json:"basic"`
+	Digest        *Digest   `json:"digest"`
+	Hawk          *Hawk     `json:"hawk"`
+	Awsv4         *AwsV4    `json:"awsv4"`
+	Ntlm          *Ntlm     `json:"ntlm"`
+	Edgegrid      *Edgegrid `json:"edgegrid"`
+	Oauth1        *Oauth1   `json:"oauth1"`
+	Bidirectional TLS       `json:"bidirectional"`
+}
+
+type TLS struct {
+	CaCert     string `json:"ca_cert"`
+	CaCertName string `json:"ca_cert_name"`
 }
 
 type Bearer struct {

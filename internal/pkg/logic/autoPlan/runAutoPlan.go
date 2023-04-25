@@ -200,16 +200,22 @@ type Cookie struct {
 }
 
 type Auth struct {
-	Type     string    `json:"type" bson:"type"`
-	KV       *KV       `json:"kv" bson:"kv"`
-	Bearer   *Bearer   `json:"bearer" bson:"bearer"`
-	Basic    *Basic    `json:"basic" bson:"basic"`
-	Digest   *Digest   `json:"digest"`
-	Hawk     *Hawk     `json:"hawk"`
-	Awsv4    *AwsV4    `json:"awsv4"`
-	Ntlm     *Ntlm     `json:"ntlm"`
-	Edgegrid *Edgegrid `json:"edgegrid"`
-	Oauth1   *Oauth1   `json:"oauth1"`
+	Type          string    `json:"type" bson:"type"`
+	KV            *KV       `json:"kv" bson:"kv"`
+	Bearer        *Bearer   `json:"bearer" bson:"bearer"`
+	Basic         *Basic    `json:"basic" bson:"basic"`
+	Digest        *Digest   `json:"digest"`
+	Hawk          *Hawk     `json:"hawk"`
+	Awsv4         *AwsV4    `json:"awsv4"`
+	Ntlm          *Ntlm     `json:"ntlm"`
+	Edgegrid      *Edgegrid `json:"edgegrid"`
+	Oauth1        *Oauth1   `json:"oauth1"`
+	Bidirectional TLS       `json:"bidirectional"`
+}
+
+type TLS struct {
+	CaCert     string `json:"ca_cert"`
+	CaCertName string `json:"ca_cert_name"`
 }
 
 type Bearer struct {
@@ -325,7 +331,7 @@ type VarForm struct {
 	FieldType   string      `json:"field_type" bson:"field_type"`
 }
 
-//////////
+// ////////
 type UsableMachineMap struct {
 	IP               string // IP地址(包含端口号)
 	Region           string // 机器所属区域

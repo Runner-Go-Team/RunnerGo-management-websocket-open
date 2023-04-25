@@ -103,3 +103,73 @@ type UpdateImportSceneVariablesReq struct {
 	ID     int64 `json:"id"`
 	Status int32 `json:"status"`
 }
+
+type SaveGlobalParamReq struct {
+	TeamID    string          `json:"team_id" bson:"team_id" binding:"required"`
+	ParamType int32           `json:"param_type" bson:"param_type" binding:"required"`
+	Cookies   []CookieParam   `json:"cookies" bson:"cookies"`
+	Headers   []HeaderParam   `json:"headers" bson:"headers"`
+	Variables []VariableParam `json:"variables" bson:"variables"`
+	Asserts   []AssertParam   `json:"asserts" bson:"asserts"`
+}
+
+type CookieParam struct {
+	IsChecked int32  `json:"is_checked" bson:"is_checked"`
+	Key       string `json:"key" bson:"key"`
+	Value     string `json:"value" bson:"value"`
+}
+
+type HeaderParam struct {
+	IsChecked   int32  `json:"is_checked" bson:"is_checked"`
+	Key         string `json:"key" bson:"key"`
+	Value       string `json:"value" bson:"value"`
+	Description string `json:"description" bson:"description"`
+}
+
+type VariableParam struct {
+	IsChecked   int32  `json:"is_checked" bson:"is_checked"`
+	Key         string `json:"key" bson:"key"`
+	Value       string `json:"value" bson:"value"`
+	Description string `json:"description" bson:"description"`
+}
+
+type AssertParam struct {
+	IsChecked    int32  `json:"is_checked" bson:"is_checked"`
+	ResponseType int32  `json:"response_type" bson:"response_type"`
+	Var          string `json:"var" bson:"var"`
+	Compare      string `json:"compare" bson:"compare"`
+	Val          string `json:"val" bson:"val"`
+}
+
+type GetGlobalParamReq struct {
+	TeamID string `json:"team_id" binding:"required"`
+}
+
+type GetGlobalParamResp struct {
+	Cookies   []CookieParam   `json:"cookies"`
+	Headers   []HeaderParam   `json:"headers"`
+	Variables []VariableParam `json:"variables"`
+	Asserts   []AssertParam   `json:"asserts"`
+}
+
+type SaveSceneParamReq struct {
+	TeamID    string          `json:"team_id" bson:"team_id" binding:"required"`
+	SceneID   string          `json:"scene_id" bson:"scene_id" binding:"required"`
+	ParamType int32           `json:"param_type" bson:"param_type" binding:"required"`
+	Cookies   []CookieParam   `json:"cookies" bson:"cookies"`
+	Headers   []HeaderParam   `json:"headers" bson:"headers"`
+	Variables []VariableParam `json:"variables" bson:"variables"`
+	Asserts   []AssertParam   `json:"asserts" bson:"asserts"`
+}
+
+type GetSceneParamReq struct {
+	TeamID  string `json:"team_id"`
+	SceneID string `json:"scene_id"`
+}
+
+type GetSceneParamResp struct {
+	Cookies   []CookieParam   `json:"cookies"`
+	Headers   []HeaderParam   `json:"headers"`
+	Variables []VariableParam `json:"variables"`
+	Asserts   []AssertParam   `json:"asserts"`
+}

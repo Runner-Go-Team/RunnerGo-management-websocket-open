@@ -15,6 +15,8 @@ import (
 	"RunnerGo-management/internal/pkg/logic/report"
 	"RunnerGo-management/internal/pkg/logic/scene"
 	"RunnerGo-management/internal/pkg/logic/target"
+	"RunnerGo-management/internal/pkg/logic/variable"
+	"RunnerGo-management/internal/pkg/public"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -28,12 +30,14 @@ var upGrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+	ReadBufferSize:  1024000,
+	WriteBufferSize: 1024000,
 }
 
 // WebSocketReq wb消息结构体
 type WebSocketReq struct {
-	RouteUrl string `json:"route_url"`
-	Param    string `json:"param"`
+	RouteUrl string `json:"route_url" binding:"required"`
+	Param    string `json:"param" binding:"required"`
 }
 
 // ClientLinkList 客户端连接信息
@@ -72,7 +76,6 @@ func CloseInvalidWbLink() {
 func PushRunningPlanCount() {
 	msgType := 1
 	for {
-		ctx := context.Background()
 		if len(ClientLinkList) > 0 {
 			// 组装团队与团队所属用户的信息
 			teamAndUserMap := make(map[string][]string, len(ClientLinkList))
@@ -82,6 +85,7 @@ func PushRunningPlanCount() {
 
 			// 查询正在运行的性能计划
 			for teamID, userArr := range teamAndUserMap {
+				ctx := context.Background()
 				runningPlanNum, err := plan.ListByStatus(ctx, teamID)
 				if err != nil {
 					log.Logger.Info("运行中计划--查询失败，err:", err)
@@ -174,8 +178,8 @@ func Dispense(ctx *gin.Context, ws *websocket.Conn, wbReq *WebSocketReq) (string
 		respString, err = AutoReportList(ctx, wbReq)
 	case "stress_plan_detail":
 		respString, err = StressPlanDetail(ctx, wbReq)
-	case "stress_report_debug":
-		respString, err = StressReportDebug(ctx, wbReq)
+	//case "stress_report_debug":
+	//	respString, err = StressReportDebug(ctx, wbReq)
 	case "stress_report_machine_monitor":
 		respString, err = StressReportMachineMonitor(ctx, wbReq)
 	case "stress_report_task_detail":
@@ -192,6 +196,14 @@ func Dispense(ctx *gin.Context, ws *websocket.Conn, wbReq *WebSocketReq) (string
 		UserSwitchTeam(ctx, wbReq, ws)
 	case "disband_team_notice":
 		DisbandTeamNotice(ctx, wbReq)
+	case "save_global_param":
+		respString, err = SaveGlobalParam(ctx, wbReq)
+	case "get_global_param":
+		respString, err = GetGlobalParam(ctx, wbReq)
+	case "save_scene_param":
+		respString, err = SaveSceneParam(ctx, wbReq)
+	case "get_scene_param":
+		respString, err = GetSceneParam(ctx, wbReq)
 	default:
 		respData := response.Response{}
 		resTemp, _ := json.Marshal(respData)
@@ -509,23 +521,23 @@ func StressPlanDetail(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
 	return resp, nil
 }
 
-func StressReportDebug(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
-	var req rao.GetReportReq
-	err := json.Unmarshal([]byte(wbReq.Param), &req)
-	if err != nil {
-		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
-		return resp, err
-	}
-
-	result, err := report.GetReportDebugLog(ctx, req)
-	if err != nil {
-		resp := response.WbErrorWithMsg(ctx, errno.ErrMysqlFailed, err.Error(), wbReq.RouteUrl)
-		return resp, err
-	}
-
-	resp := response.WbSuccessWithData(ctx, result, wbReq.RouteUrl)
-	return resp, nil
-}
+//func StressReportDebug(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
+//	var req rao.GetReportReq
+//	err := json.Unmarshal([]byte(wbReq.Param), &req)
+//	if err != nil {
+//		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
+//		return resp, err
+//	}
+//
+//	result, err := report.GetReportDebugLog(ctx, req)
+//	if err != nil {
+//		resp := response.WbErrorWithMsg(ctx, errno.ErrMysqlFailed, err.Error(), wbReq.RouteUrl)
+//		return resp, err
+//	}
+//
+//	resp := response.WbSuccessWithData(ctx, result, wbReq.RouteUrl)
+//	return resp, nil
+//}
 
 func StressReportMachineMonitor(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
 	var req rao.ListMachineReq
@@ -676,4 +688,146 @@ func DisbandTeamNotice(ctx *gin.Context, wbReq *WebSocketReq) {
 			}
 		}
 	}
+}
+
+func SaveGlobalParam(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
+	var req rao.SaveGlobalParamReq
+	err := json.Unmarshal([]byte(wbReq.Param), &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+
+	if req.ParamType == 1 {
+		tempArr := make([]string, 0, len(req.Cookies))
+		for _, v := range req.Cookies {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 2 {
+		tempArr := make([]string, 0, len(req.Headers))
+		for _, v := range req.Headers {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 3 {
+		tempArr := make([]string, 0, len(req.Variables))
+		for _, v := range req.Variables {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 4 {
+
+	} else {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+		return resp, err
+	}
+
+	err = variable.SaveGlobalParam(ctx, &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrMongoFailed, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+	resp := response.WbSuccess(ctx, wbReq.RouteUrl)
+	return resp, nil
+}
+
+func GetGlobalParam(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
+	var req rao.GetGlobalParamReq
+	err := json.Unmarshal([]byte(wbReq.Param), &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+
+	globalParamData, err := variable.GetGlobalParam(ctx, &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrMongoFailed, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+	resp := response.WbSuccessWithData(ctx, globalParamData, wbReq.RouteUrl)
+	return resp, nil
+}
+
+func SaveSceneParam(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
+	var req rao.SaveSceneParamReq
+	err := json.Unmarshal([]byte(wbReq.Param), &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+
+	if req.ParamType == 1 {
+		tempArr := make([]string, 0, len(req.Cookies))
+		for _, v := range req.Cookies {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 2 {
+		tempArr := make([]string, 0, len(req.Headers))
+		for _, v := range req.Headers {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 3 {
+		tempArr := make([]string, 0, len(req.Variables))
+		for _, v := range req.Variables {
+			isExist := public.StringInSlice(v.Key, tempArr)
+			if isExist {
+				resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+				return resp, err
+			}
+			tempArr = append(tempArr, v.Key)
+		}
+	} else if req.ParamType == 4 {
+
+	} else {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, "", wbReq.RouteUrl)
+		return resp, err
+	}
+
+	err = variable.SaveSceneParam(ctx, &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrMongoFailed, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+	resp := response.WbSuccess(ctx, wbReq.RouteUrl)
+	return resp, nil
+}
+
+func GetSceneParam(ctx *gin.Context, wbReq *WebSocketReq) (string, error) {
+	var req rao.GetSceneParamReq
+	err := json.Unmarshal([]byte(wbReq.Param), &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrParam, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+
+	sceneParamData, err := variable.GetSceneParam(ctx, &req)
+	if err != nil {
+		resp := response.WbErrorWithMsg(ctx, errno.ErrMongoFailed, err.Error(), wbReq.RouteUrl)
+		return resp, err
+	}
+	resp := response.WbSuccessWithData(ctx, sceneParamData, wbReq.RouteUrl)
+	return resp, nil
 }

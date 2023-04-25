@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/shopspring/decimal"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math"
 	"strconv"
 	"time"
-
-	"github.com/shopspring/decimal"
 
 	"gorm.io/gen/field"
 
@@ -263,9 +263,8 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 	tx := dal.GetQuery().StressPlanReport
 	reportInfo, err := tx.WithContext(ctx).Where(tx.TeamID.Eq(req.TeamID), tx.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		proof.Errorf("报告详情--查询报告基本信息失败，err:")
-		errNew := fmt.Errorf("报告不存在")
-		return nil, errNew
+		log.Logger.Info("报告详情--查询报告基本信息失败，err:")
+		return nil, fmt.Errorf("报告不存在")
 	}
 
 	var detail mao.ReportTask
@@ -273,21 +272,21 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 
 	err = collection.FindOne(ctx, bson.D{{"team_id", req.TeamID}, {"plan_id", reportInfo.PlanID}, {"report_id", req.ReportID}}).Decode(&detail)
 	if err != nil {
-		proof.Error("mongo decode err", proof.WithError(err))
+		log.Logger.Info("mongo decode err", proof.WithError(err))
 		return nil, err
 	}
 
 	r := query.Use(dal.DB()).StressPlanReport
 	ru, err := r.WithContext(ctx).Where(r.TeamID.Eq(req.TeamID), r.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		proof.Error("req not found err", proof.WithError(err))
+		log.Logger.Info("req not found err", proof.WithError(err))
 		return nil, err
 	}
 
 	u := query.Use(dal.DB()).User
 	user, err := u.WithContext(ctx).Where(u.UserID.Eq(ru.RunUserID)).First()
 	if err != nil {
-		proof.Error("user not found err", proof.WithError(err))
+		log.Logger.Info("user not found err", proof.WithError(err))
 		return nil, err
 	}
 
@@ -387,47 +386,49 @@ func GetReportDebugStatus(ctx context.Context, req rao.GetReportReq) string {
 	return consts.StopDebug
 }
 
-func GetReportDebugLog(ctx context.Context, report rao.GetReportReq) (debugMsgList []map[string]interface{}, err error) {
+func GetReportDebugLog(ctx context.Context, report rao.GetReportReq) ([]map[string]interface{}, error) {
 	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectStressDebug)
 	filter := bson.D{{"report_id", report.ReportID}, {"team_id", report.TeamID}}
-	cur, err := collection.Find(ctx, filter)
+	// 查询数据并限制返回的数量
+	findOptions := options.Find().SetLimit(100)
+	cur, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		log.Logger.Info("debug日志查询失败", proof.WithError(err))
-		return
-	}
-	for cur.Next(ctx) {
-		debugMsg := make(map[string]interface{})
-		err = cur.Decode(&debugMsg)
-		if err != nil {
-			log.Logger.Info("debug日志转换失败", proof.WithError(err))
-			return
-		}
-		if debugMsg["end"] != true {
-			// 删除无用的字段
-			delete(debugMsg, "_id")
-			delete(debugMsg, "api_id")
-			delete(debugMsg, "assertion_failed_num")
-			delete(debugMsg, "assertion_num")
-			delete(debugMsg, "case_id")
-			delete(debugMsg, "event_id")
-			delete(debugMsg, "next_list")
-			delete(debugMsg, "parent_id")
-			delete(debugMsg, "plan_id")
-			delete(debugMsg, "report_id")
-			delete(debugMsg, "scene_id")
-			delete(debugMsg, "team_id")
-			delete(debugMsg, "type")
-			delete(debugMsg, "uuid")
-			debugMsgList = append(debugMsgList, debugMsg)
-		}
+		return nil, err
 	}
 
-	// 限制debug日志数量
-	if len(debugMsgList) > 500 {
-		startIndex := len(debugMsgList) - 500
-		debugMsgList = debugMsgList[startIndex:]
+	var debugMsgListTemp []map[string]interface{}
+	if err = cur.All(ctx, &debugMsgListTemp); err != nil {
+		return nil, err
 	}
-	return
+
+	res := make([]map[string]interface{}, 0, len(debugMsgListTemp))
+
+	debugMsgList := make([]map[string]interface{}, 0, len(debugMsgListTemp))
+	for _, debugMsg := range debugMsgListTemp {
+		// 删除无用的字段
+		delete(debugMsg, "_id")
+		delete(debugMsg, "api_id")
+		delete(debugMsg, "assertion_failed_num")
+		delete(debugMsg, "assertion_num")
+		delete(debugMsg, "case_id")
+		delete(debugMsg, "event_id")
+		delete(debugMsg, "next_list")
+		delete(debugMsg, "parent_id")
+		delete(debugMsg, "plan_id")
+		delete(debugMsg, "report_id")
+		delete(debugMsg, "scene_id")
+		delete(debugMsg, "team_id")
+		delete(debugMsg, "type")
+		delete(debugMsg, "uuid")
+		debugMsgList = append(debugMsgList, debugMsg)
+	}
+	// 限制debug日志数量
+	if len(debugMsgList) > 100 {
+		startIndex := len(debugMsgList) - 100
+		res = debugMsgList[startIndex:]
+	}
+	return res, nil
 }
 
 // GetReportDetail 从redis获取测试数据

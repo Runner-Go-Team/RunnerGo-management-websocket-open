@@ -1,1 +1,0 @@
-2023-03-27T17:17:19.182+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 3.696639375, "time": "2023-03-27T09:17:19Z"}

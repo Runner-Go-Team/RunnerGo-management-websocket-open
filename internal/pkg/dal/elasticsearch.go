@@ -2,10 +2,8 @@ package dal
 
 import (
 	"fmt"
-
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 	"github.com/olivere/elastic/v7"
-
-	"RunnerGo-management/internal/pkg/conf"
 )
 
 var (

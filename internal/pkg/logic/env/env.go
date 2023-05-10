@@ -1,13 +1,13 @@
 package env
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/biz/record"
-	"RunnerGo-management/internal/pkg/dal/model"
-	"RunnerGo-management/internal/pkg/packer"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gen"
 	"gorm.io/gorm"
@@ -15,10 +15,10 @@ import (
 	"strings"
 	"sync"
 
-	"RunnerGo-management/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
 
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 )
 
 func GetList(ctx *gin.Context, req *rao.EnvListReq) ([]rao.EnvListResp, error) {

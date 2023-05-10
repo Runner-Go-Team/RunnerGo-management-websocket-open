@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/model"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 	"golang.org/x/net/context"
 	"gorm.io/gen"
 	"time"

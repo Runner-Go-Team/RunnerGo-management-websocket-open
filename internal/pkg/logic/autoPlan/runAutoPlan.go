@@ -1,20 +1,20 @@
 package autoPlan
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/biz/mail"
-	"RunnerGo-management/internal/pkg/biz/record"
-	"RunnerGo-management/internal/pkg/biz/uuid"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/mao"
-	"RunnerGo-management/internal/pkg/dal/model"
-	"RunnerGo-management/internal/pkg/dal/run_plan"
-	"RunnerGo-management/internal/pkg/logic/team"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/mail"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/uuid"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/run_plan"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/team"
 	"github.com/go-omnibus/proof"
 	"github.com/go-resty/resty/v2"
 	"github.com/shirou/gopsutil/load"
@@ -45,7 +45,6 @@ type Baton struct {
 	sceneCaseFlows  map[string]*mao.SceneCaseFlow
 	sceneVariables  map[string][]*model.Variable
 	importVariables map[string][]*model.VariableImport
-	reports         []*model.Report
 	balance         *DispatchMachineBalance
 	stress          []*run_plan.Stress
 	MachineList     []*HeartBeat
@@ -172,10 +171,16 @@ type Api struct {
 }
 
 type HttpApiSetup struct {
-	IsRedirects  int `json:"is_redirects"`  // 是否跟随重定向 0: 是   1：否
-	RedirectsNum int `json:"redirects_num"` // 重定向次数>= 1; 默认为3
-	ReadTimeOut  int `json:"read_time_out"` // 请求超时时间
-	WriteTimeOut int `json:"write_time_out"`
+	IsRedirects         int    `json:"is_redirects"`  // 是否跟随重定向 0: 是   1：否
+	RedirectsNum        int    `json:"redirects_num"` // 重定向次数>= 1; 默认为3
+	ReadTimeOut         int    `json:"read_time_out"` // 请求超时时间
+	WriteTimeOut        int    `json:"write_time_out"`
+	ClientName          string `json:"client_name"`
+	KeepAlive           bool   `json:"keep_alive"`
+	MaxIdleConnDuration int32  `json:"max_idle_conn_duration"`
+	MaxConnPerHost      int32  `json:"max_conn_per_host"`
+	UserAgent           bool   `json:"user_agent"`
+	MaxConnWaitTimeout  int64  `json:"max_conn_wait_timeout"`
 }
 
 type Request struct {

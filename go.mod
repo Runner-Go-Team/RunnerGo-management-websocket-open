@@ -1,4 +1,4 @@
-module RunnerGo-management
+module github.com/Runner-Go-Team/RunnerGo-management-websocket-open
 
 go 1.18
 
@@ -15,12 +15,10 @@ require (
 	github.com/go-omnibus/proof v0.0.0-20220920035050-20c928df67bd
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/goccy/go-json v0.9.11
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/gorilla/websocket v1.5.0
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/olivere/elastic/v7 v7.0.32
-	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/shopspring/decimal v1.3.1
@@ -56,6 +54,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

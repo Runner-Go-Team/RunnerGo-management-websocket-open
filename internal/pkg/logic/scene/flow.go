@@ -1,18 +1,18 @@
 package scene
 
 import (
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/record"
 	"context"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/mao"
-	"RunnerGo-management/internal/pkg/dal/query"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/packer"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 )
 
 func SaveFlow(ctx context.Context, req *rao.SaveFlowReq) (int, error) {

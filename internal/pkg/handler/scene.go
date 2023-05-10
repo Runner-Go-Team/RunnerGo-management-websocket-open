@@ -1,14 +1,14 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/dal/runner"
-	"RunnerGo-management/internal/pkg/logic/scene"
-	"RunnerGo-management/internal/pkg/logic/target"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/runner"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/scene"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/target"
 	"github.com/gin-gonic/gin"
 )
 

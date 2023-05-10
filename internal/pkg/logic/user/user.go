@@ -3,9 +3,9 @@ package user
 import (
 	"context"
 
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/query"
-	"RunnerGo-management/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 )
 
 func FirstByUserID(ctx context.Context, userID string, teamID string) (*rao.Member, error) {

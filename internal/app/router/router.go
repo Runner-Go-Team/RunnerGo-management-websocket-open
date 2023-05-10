@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-omnibus/proof"
 
-	"RunnerGo-management/internal/app/middleware"
-	"RunnerGo-management/internal/pkg/handler"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/app/middleware"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/handler"
 )
 
 func RegisterRouter(r *gin.Engine) {

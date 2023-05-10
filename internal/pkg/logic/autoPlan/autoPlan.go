@@ -1,22 +1,22 @@
 package autoPlan
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/biz/mail"
-	"RunnerGo-management/internal/pkg/biz/record"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/biz/uuid"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/mao"
-	"RunnerGo-management/internal/pkg/dal/model"
-	"RunnerGo-management/internal/pkg/dal/query"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/packer"
 	"context"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/mail"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/uuid"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -1007,6 +1007,7 @@ func GetAutoPlanReportList(ctx *gin.Context, req *rao.GetAutoPlanReportListReq) 
 		detailTmp := &rao.GetAutoPlanReportList{
 			RankID:           detail.RankID,
 			ReportID:         detail.ReportID,
+			ReportName:       detail.ReportName,
 			PlanID:           detail.PlanID,
 			TeamID:           detail.TeamID,
 			PlanName:         detail.PlanName,

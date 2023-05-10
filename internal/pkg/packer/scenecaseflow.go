@@ -1,12 +1,11 @@
 package packer
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/dal/mao"
-	"RunnerGo-management/internal/pkg/dal/model"
-	"RunnerGo-management/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 	"github.com/go-omnibus/proof"
-	"github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -159,9 +158,4 @@ func TransMaoFlowToMaoSceneCaseFlow(flow *mao.Flow, sceneID string) *mao.SceneCa
 		proof.Errorf("sceneCaseFlow change UUID err %w", err)
 	}
 	return &sceneCaseFlow
-}
-
-func GetUUID() string {
-	uuid := uuid.NewV4()
-	return uuid.String()
 }

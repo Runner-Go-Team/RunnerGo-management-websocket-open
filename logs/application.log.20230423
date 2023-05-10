@@ -1,5 +1,0 @@
-2023-04-23T11:18:57.044+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 20.177378375, "time": "2023-04-23T03:18:57Z"}
-2023-04-23T11:22:22.594+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 30.23237175, "time": "2023-04-23T03:22:22Z"}
-2023-04-23T11:30:19.633+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 19.177349875, "time": "2023-04-23T03:30:19Z"}
-2023-04-23T11:31:15.546+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 25.323280375, "time": "2023-04-23T03:31:15Z"}
-2023-04-23T11:35:00.516+0800	[34mINFO[0m	/websocket/index	{"status": 200, "method": "GET", "path": "/websocket/index", "query": "", "ip": "127.0.0.1", "user-agent": "", "latency": 24.712546542, "time": "2023-04-23T03:35:00Z"}

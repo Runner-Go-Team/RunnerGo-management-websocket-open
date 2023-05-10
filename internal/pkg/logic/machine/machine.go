@@ -1,9 +1,9 @@
 package machine
 
 import (
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/rao"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 	"github.com/gin-gonic/gin"
 	"github.com/go-omnibus/proof"
 	"gorm.io/gen"

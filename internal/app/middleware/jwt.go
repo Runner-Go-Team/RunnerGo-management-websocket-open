@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

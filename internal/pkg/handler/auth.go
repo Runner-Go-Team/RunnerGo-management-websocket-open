@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/encrypt"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/conf"
-	"RunnerGo-management/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/encrypt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 	"gorm.io/gorm"
 	"strconv"
 	"strings"
@@ -14,12 +14,12 @@ import (
 	"github.com/go-omnibus/omnibus"
 	"github.com/go-omnibus/proof"
 
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/logic/auth"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/auth"
 
 	"github.com/gin-gonic/gin"
 )

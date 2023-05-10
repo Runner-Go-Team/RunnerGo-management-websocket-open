@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	services "RunnerGo-management/api"
+	services "github.com/Runner-Go-Team/RunnerGo-management-websocket-open/api"
 )
 
 var (

@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/logic/operation"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/operation"
 
 	"github.com/gin-gonic/gin"
 )

@@ -1,23 +1,23 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/biz/mail"
-	"RunnerGo-management/internal/pkg/logic/auth"
-	"RunnerGo-management/internal/pkg/packer"
 	"encoding/json"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/mail"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/auth"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 	"github.com/gin-gonic/gin"
 	"github.com/go-omnibus/proof"
 	"go.mongodb.org/mongo-driver/bson"
 	"strings"
 
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/logic/report"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/report"
 )
 
 // ListReports 测试报告列表

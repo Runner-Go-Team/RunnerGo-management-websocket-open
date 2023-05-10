@@ -1,13 +1,13 @@
 package mail
 
 import (
-	"RunnerGo-management/internal/pkg/biz/encrypt"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/encrypt"
 	"math/rand"
 	"net/smtp"
 	"time"
 
-	"RunnerGo-management/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 )
 
 const (

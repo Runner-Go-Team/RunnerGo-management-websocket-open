@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"RunnerGo-management/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 )
 
 func newAutoPlanTimedTaskConf(db *gorm.DB, opts ...gen.DOOption) autoPlanTimedTaskConf {

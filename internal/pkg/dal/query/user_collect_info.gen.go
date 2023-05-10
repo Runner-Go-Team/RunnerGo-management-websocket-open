@@ -16,7 +16,7 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	"RunnerGo-management/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 )
 
 func newUserCollectInfo(db *gorm.DB, opts ...gen.DOOption) userCollectInfo {

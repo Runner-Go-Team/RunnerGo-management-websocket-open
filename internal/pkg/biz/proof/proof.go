@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-omnibus/proof"
 
-	"RunnerGo-management/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 )
 
 func MustInitProof() {

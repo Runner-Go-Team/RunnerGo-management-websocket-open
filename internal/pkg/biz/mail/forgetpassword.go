@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"RunnerGo-management/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 )
 
 const (

@@ -1,8 +1,8 @@
 package response
 
 import (
-	"RunnerGo-management/internal/pkg/biz/errno"
 	"encoding/json"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/net/context"
 	"net/http"

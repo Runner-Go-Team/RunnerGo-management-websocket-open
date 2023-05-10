@@ -8,7 +8,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"RunnerGo-management/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 )
 
 func GetNetIORangeUsage(ip string, s, e int64) ([][]interface{}, error) {

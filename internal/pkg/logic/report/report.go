@@ -1,12 +1,12 @@
 package report
 
 import (
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/logic/team"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/team"
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,14 +20,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gen"
 
-	"RunnerGo-management/internal/pkg/biz/record"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
 
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/mao"
-	"RunnerGo-management/internal/pkg/dal/query"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/packer"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 )
 
 func CountByTeamID(ctx context.Context, teamID string) (int64, error) {
@@ -331,6 +331,7 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 		PlanID:         detail.PlanID,
 		PlanName:       detail.PlanName,
 		ReportID:       detail.ReportID,
+		ReportName:     reportInfo.ReportName,
 		SceneID:        ru.SceneID,
 		SceneName:      ru.SceneName,
 		CreatedTimeSec: ru.CreatedAt.Unix(),

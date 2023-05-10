@@ -1,11 +1,11 @@
 package mail
 
 import (
-	"RunnerGo-management/internal/pkg/dal/model"
 	"fmt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 	"net/smtp"
 
-	"RunnerGo-management/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 )
 
 const (

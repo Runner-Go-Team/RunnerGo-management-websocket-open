@@ -1,9 +1,8 @@
 package dal
 
 import (
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 	"github.com/go-redis/redis/v8"
-
-	"RunnerGo-management/internal/pkg/conf"
 )
 
 var rdb *redis.Client

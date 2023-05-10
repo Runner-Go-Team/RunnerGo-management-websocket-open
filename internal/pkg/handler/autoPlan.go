@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"RunnerGo-management/internal/pkg/biz/consts"
-	"RunnerGo-management/internal/pkg/biz/errno"
-	"RunnerGo-management/internal/pkg/biz/jwt"
-	"RunnerGo-management/internal/pkg/biz/mail"
-	"RunnerGo-management/internal/pkg/biz/record"
-	"RunnerGo-management/internal/pkg/biz/response"
-	"RunnerGo-management/internal/pkg/dal"
-	"RunnerGo-management/internal/pkg/dal/rao"
-	"RunnerGo-management/internal/pkg/logic/auth"
-	"RunnerGo-management/internal/pkg/logic/autoPlan"
 	"context"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/errno"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/mail"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/auth"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/autoPlan"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -65,40 +65,6 @@ func RunAutoPlan(ctx *gin.Context) {
 			return
 		}
 	}
-
-	//if autoPlanInfo.TaskType == consts.PlanTaskTypeNormal {
-	//	rx := dal.GetQuery().AutoPlanReport
-	//	reportInfo, err := rx.WithContext(ctx).Where(rx.TeamID.Eq(req.TeamID), rx.PlanID.Eq(req.PlanID)).Order(rx.CreatedAt.Desc()).First()
-	//	if err != nil {
-	//		response.ErrorWithMsg(ctx, errno.ErrMysqlFailed, err.Error())
-	//		return
-	//	}
-	//
-	//	tx := dal.GetQuery().AutoPlanEmail
-	//	emails, err := tx.WithContext(ctx).Where(tx.TeamID.Eq(req.TeamID), tx.PlanID.Eq(req.PlanID)).Find()
-	//	if err == nil && len(emails) > 0 {
-	//		ttx := dal.GetQuery().Team
-	//		teamInfo, err := ttx.WithContext(ctx).Where(ttx.TeamID.Eq(req.TeamID)).First()
-	//		if err != nil {
-	//			response.ErrorWithMsg(ctx, errno.ErrMysqlFailed, err.Error())
-	//			return
-	//		}
-	//
-	//		ux := dal.GetQuery().User
-	//		user, err := ux.WithContext(ctx).Where(ux.UserID.Eq(reportInfo.RunUserID)).First()
-	//		if err != nil {
-	//			response.ErrorWithMsg(ctx, errno.ErrMysqlFailed, err.Error())
-	//			return
-	//		}
-	//
-	//		for _, email := range emails {
-	//			if err := mail.SendAutoPlanEmail(email.Email, autoPlanInfo, teamInfo, user.Nickname, reportInfo.ReportID); err != nil {
-	//				response.ErrorWithMsg(ctx, errno.ErrHttpFailed, err.Error())
-	//				return
-	//			}
-	//		}
-	//	}
-	//}
 	response.SuccessWithData(ctx, rao.RunAutoPlanResp{
 		TaskType: autoPlanInfo.TaskType,
 	})

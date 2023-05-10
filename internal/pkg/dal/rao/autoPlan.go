@@ -167,6 +167,7 @@ type GetAutoPlanReportListReq struct {
 type GetAutoPlanReportList struct {
 	RankID           int64  `json:"rank_id"`
 	ReportID         string `json:"report_id"`
+	ReportName       string `json:"report_name"`
 	PlanID           string `json:"plan_id"`
 	TeamID           string `json:"team_id"`
 	PlanName         string `json:"plan_name"`

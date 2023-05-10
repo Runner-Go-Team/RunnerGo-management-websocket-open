@@ -1,7 +1,7 @@
 package rao
 
 import (
-	"RunnerGo-management/internal/pkg/dal/model"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 )
 
 type StressPlan struct {

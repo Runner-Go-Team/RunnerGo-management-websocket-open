@@ -3,8 +3,8 @@ package dal
 import (
 	"fmt"
 
-	"RunnerGo-management/internal/pkg/conf"
-	"RunnerGo-management/internal/pkg/dal/query"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

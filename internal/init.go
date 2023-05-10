@@ -1,10 +1,10 @@
 package internal
 
 import (
-	"RunnerGo-management/internal/pkg/biz/log"
-	"RunnerGo-management/internal/pkg/biz/proof"
-	"RunnerGo-management/internal/pkg/conf"
-	"RunnerGo-management/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/proof"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
 	"go.uber.org/zap"
 )
 
@@ -25,13 +25,4 @@ func InitProjects(readConfMode int, configFile string) {
 	// 初始化logger
 	zap.S().Debug("初始化logger")
 	log.InitLogger()
-
-	//// 初始化redis客户端
-	//if err := dal.InitRedisClient(
-	//	conf.Conf.Redis.Address,
-	//	conf.Conf.Redis.Password,
-	//	int64(conf.Conf.Redis.DB),
-	//); err != nil {
-	//	panic("redis 连接失败")
-	//}
 }

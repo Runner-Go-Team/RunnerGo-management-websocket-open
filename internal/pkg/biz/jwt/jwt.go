@@ -2,12 +2,10 @@ package jwt
 
 import (
 	"fmt"
-	"time"
-
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/conf"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-
-	"RunnerGo-management/internal/pkg/conf"
+	"time"
 )
 
 func GenerateToken(userID string) (string, time.Time, error) {

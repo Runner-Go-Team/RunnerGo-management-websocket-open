@@ -1,7 +1,7 @@
 package packer
 
 import (
-	"RunnerGo-management/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
 )
 
 func TransMachineMonitorToMao(machineIP string, monitorData mao.HeartBeat, createdAt int64) *mao.MachineMonitorData {

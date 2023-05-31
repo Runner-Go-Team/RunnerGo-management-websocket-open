@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strconv"
 	"time"
 
@@ -14,11 +15,11 @@ import (
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 )
 
-func ListMachines(ctx context.Context, req *rao.ListMachineReq) (*rao.ListMachineResp, error) {
+func ListMachines(ctx context.Context, req *rao.ListMachineReq) (rao.ListMachineResp, error) {
 	r := query.Use(dal.DB()).StressPlanReport
 	report, err := r.WithContext(ctx).Where(r.TeamID.Eq(req.TeamID), r.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		return nil, err
+		return rao.ListMachineResp{}, nil
 	}
 
 	//// 产过半个月以上的报告，不让查询压力机监控数据
@@ -40,13 +41,13 @@ func ListMachines(ctx context.Context, req *rao.ListMachineReq) (*rao.ListMachin
 		StartTimeSec: startTimeSec,
 		EndTimeSec:   endTimeSec,
 		ReportStatus: report.Status,
-		Metrics:      make([]*rao.Metric, 0),
+		Metrics:      make([]rao.Metric, 0),
 	}
 
 	rm := dal.GetQuery().ReportMachine
 	rms, err := rm.WithContext(ctx).Where(rm.TeamID.Eq(req.TeamID), rm.ReportID.Eq(req.ReportID)).Find()
 	if err != nil {
-		return nil, err
+		return resp, nil
 	}
 
 	// 排重字典
@@ -65,17 +66,19 @@ func ListMachines(ctx context.Context, req *rao.ListMachineReq) (*rao.ListMachin
 		// 查询机器信息
 		machineInfo, err := machineTable.WithContext(ctx).Where(machineTable.IP.Eq(machine.IP)).First()
 		if err != nil {
-			return nil, err
+			return resp, nil
 		}
 
 		// 从mg里面查出来压力机监控数据
-		mmd, err := collection.Find(ctx, bson.D{{"machine_ip", machine.IP}, {"created_at", bson.D{{"$gte", startTimeSec}}}, {"created_at", bson.D{{"$lte", endTimeSec}}}})
-		if err != nil {
-			return nil, err
-		}
+		sort := bson.D{{"created_at", 1}} // 按照created_at字段升序排序
+		mmd, err := collection.Find(ctx, bson.D{{"machine_ip", machine.IP},
+			{"created_at", bson.D{{"$gte", startTimeSec}}},
+			{"created_at", bson.D{{"$lte", endTimeSec}}}}, &options.FindOptions{
+			Sort: sort,
+		})
 		var machineMonitorSlice []*mao.MachineMonitorData
 		if err = mmd.All(ctx, &machineMonitorSlice); err != nil {
-			return nil, err
+			return resp, nil
 		}
 
 		cpu := make([][]interface{}, 0, len(machineMonitorSlice))
@@ -116,7 +119,7 @@ func ListMachines(ctx context.Context, req *rao.ListMachineReq) (*rao.ListMachin
 			disk = append(disk, diskTmp)
 
 		}
-		resp.Metrics = append(resp.Metrics, &rao.Metric{
+		resp.Metrics = append(resp.Metrics, rao.Metric{
 			MachineName: machineInfo.Name,
 			CPU:         cpu,
 			Mem:         mem,
@@ -125,5 +128,5 @@ func ListMachines(ctx context.Context, req *rao.ListMachineReq) (*rao.ListMachin
 		})
 	}
 
-	return &resp, nil
+	return resp, nil
 }

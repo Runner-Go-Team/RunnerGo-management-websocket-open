@@ -72,10 +72,10 @@ type ListMachineReq struct {
 }
 
 type ListMachineResp struct {
-	StartTimeSec int64     `json:"start_time_sec"`
-	EndTimeSec   int64     `json:"end_time_sec"`
-	ReportStatus int32     `json:"report_status"`
-	Metrics      []*Metric `json:"metrics"`
+	StartTimeSec int64    `json:"start_time_sec"`
+	EndTimeSec   int64    `json:"end_time_sec"`
+	ReportStatus int32    `json:"report_status"`
+	Metrics      []Metric `json:"metrics"`
 }
 
 type Metric struct {

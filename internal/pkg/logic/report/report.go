@@ -438,7 +438,7 @@ func GetReportDetail(ctx context.Context, req rao.GetReportReq) (resultData Resu
 	tx := dal.GetQuery().StressPlanReport
 	_, err = tx.WithContext(ctx).Where(tx.TeamID.Eq(req.TeamID), tx.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		proof.Errorf("报告详情--查询报告基本信息失败，err:")
+		log.Logger.Info("报告详情--查询报告基本信息失败，err:", err)
 		err = fmt.Errorf("报告不存在")
 		return
 	}
@@ -446,24 +446,27 @@ func GetReportDetail(ctx context.Context, req rao.GetReportReq) (resultData Resu
 	// 查询报告详情数据
 	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportData)
 	filter := bson.D{{"team_id", req.TeamID}, {"report_id", req.ReportID}}
-	var resultMsg SceneTestResultDataMsg
-	var dataMap = make(map[string]interface{})
+	resultMsg := SceneTestResultDataMsg{}
+	dataMap := make(map[string]interface{}, 0)
 	err = collection.FindOne(ctx, filter).Decode(dataMap)
 	_, ok := dataMap["data"]
 	if err != nil || !ok {
+		log.Logger.Info("mango数据为空，开始查询redis")
 		rdb := dal.GetRDBForReport()
 		key := fmt.Sprintf("reportData:%s", req.ReportID)
 		dataList := rdb.LRange(ctx, key, 0, -1).Val()
+		log.Logger.Info("查询redis报告数据，报告数据的Key:", key, "，数组长度为：", len(dataList), dataList)
 		if len(dataList) < 1 {
-			proof.Error("redis里面没有查到报告详情数据，err:", proof.WithError(err))
+			log.Logger.Info("redis里面没有查到报告详情数据")
 			err = nil
 			return
 		}
 		for i := len(dataList) - 1; i >= 0; i-- {
+			log.Logger.Info("循环处理报告列表数据，i:", i)
 			resultMsgString := dataList[i]
 			err = json.Unmarshal([]byte(resultMsgString), &resultMsg)
 			if err != nil {
-				proof.Error("json转换格式错误：", proof.WithError(err))
+				log.Logger.Info("json转换格式错误：", err)
 			}
 			if resultData.Results == nil {
 				resultData.Results = make(map[string]*ResultDataMsg)
@@ -571,10 +574,11 @@ func GetReportDetail(ctx context.Context, req rao.GetReportReq) (resultData Resu
 				}
 			}
 			if resultMsg.End {
-				var by []byte
+				log.Logger.Info("报告end为true")
+				by := make([]byte, 0)
 				by, err = json.Marshal(resultData)
 				if err != nil {
-					proof.Error("resultData转字节失败：：    ", proof.WithError(err))
+					log.Logger.Info("resultData转字节失败：：    ", err)
 					return
 				}
 				var apiResultTotalMsg = make(map[string]string)
@@ -591,17 +595,18 @@ func GetReportDetail(ctx context.Context, req rao.GetReportReq) (resultData Resu
 				dataMap["description"] = ""
 				_, err = collection.InsertOne(ctx, dataMap)
 				if err != nil {
-					proof.Error("测试数据写入mongo失败：    ", proof.WithError(err))
+					log.Logger.Info("测试数据写入mongo失败：    ", proof.WithError(err))
 					return
 				}
 				err = rdb.Del(ctx, key).Err()
 				if err != nil {
-					proof.Error(fmt.Sprintf("删除redis的key：%s:    ", key), proof.WithError(err))
+					log.Logger.Info(fmt.Sprintf("删除redis的key：%s:    ", key), proof.WithError(err))
 					return
 				}
 			}
 		}
 	} else {
+		log.Logger.Info("从mongo查到了数据，直接返回结果")
 		data := dataMap["data"].(string)
 		err = json.Unmarshal([]byte(data), &resultData)
 		resultData.Analysis = dataMap["analysis"].(string)

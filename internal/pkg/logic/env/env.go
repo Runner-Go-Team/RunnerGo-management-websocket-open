@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
@@ -33,7 +32,7 @@ func GetList(ctx *gin.Context, req *rao.EnvListReq) ([]rao.EnvListResp, error) {
 		conditions = append(conditions, teDB.Name.Like(fmt.Sprintf("%%%s%%", req.Name)))
 	}
 
-	envListData, envListErr := teDB.WithContext(ctx).Select(teDB.ID, teDB.Name, teDB.TeamID, teDB.Sort, teDB.CreatedUserID).Where(conditions...).Order(teDB.CreatedAt.Desc()).Find()
+	envListData, envListErr := teDB.WithContext(ctx).Select(teDB.ID, teDB.Name, teDB.TeamID, teDB.CreatedUserID).Where(conditions...).Order(teDB.CreatedAt.Desc()).Find()
 	if envListErr != nil {
 		log.Logger.Info("环境列表--获取列表失败，err:", envListErr)
 		return nil, envListErr
@@ -49,7 +48,7 @@ func GetList(ctx *gin.Context, req *rao.EnvListReq) ([]rao.EnvListResp, error) {
 		}
 		tesDB := query.Use(dal.DB()).TeamEnvService
 
-		envServiceListData, _ := tesDB.WithContext(ctx).Select(tesDB.ID, tesDB.TeamEnvID, tesDB.Name, tesDB.Content).Where(tesDB.TeamEnvID.In(envIDs...)).Where(tesDB.TeamID.Eq(req.TeamID)).Where(tesDB.Status.Eq(consts.TeamEnvServiceStatusNormal)).Order(tesDB.CreatedAt).Find()
+		envServiceListData, _ := tesDB.WithContext(ctx).Select(tesDB.ID, tesDB.TeamEnvID, tesDB.Name, tesDB.Content).Where(tesDB.TeamEnvID.In(envIDs...)).Where(tesDB.TeamID.Eq(req.TeamID)).Order(tesDB.CreatedAt).Find()
 
 		if len(envServiceListData) > 0 {
 			for _, envServiceListDataV := range envServiceListData {
@@ -103,7 +102,7 @@ func SaveEnv(ctx *gin.Context, req *rao.SaveEnvReq) (*rao.SaveEnvResp, error) {
 
 		if req.ID != 0 {
 
-			detail, detailErr := tb.TeamEnv.WithContext(ctx).Where(tb.TeamEnv.ID.Eq(req.ID)).Where(tb.TeamEnv.TeamID.Eq(req.TeamID)).Where(tb.TeamEnv.Status.Eq(consts.TeamEnvStatusNormal)).First()
+			detail, detailErr := tb.TeamEnv.WithContext(ctx).Where(tb.TeamEnv.ID.Eq(req.ID)).Where(tb.TeamEnv.TeamID.Eq(req.TeamID)).First()
 			if detailErr != nil {
 				log.Logger.Info("编辑环境失败,环境不存在 --编辑数据失败，err:", detailErr)
 				return detailErr
@@ -159,7 +158,6 @@ func SaveEnv(ctx *gin.Context, req *rao.SaveEnvReq) (*rao.SaveEnvResp, error) {
 				ID:     detail.ID,
 				Name:   req.Name,
 				TeamID: detail.TeamID,
-				Sort:   detail.Sort,
 			}
 
 			return record.InsertUpdate(ctx, detail.TeamID, userID, record.OperationOperateUpdateEnv, detail.Name)
@@ -199,7 +197,6 @@ func SaveEnv(ctx *gin.Context, req *rao.SaveEnvReq) (*rao.SaveEnvResp, error) {
 				ID:     insertData.ID,
 				Name:   insertData.Name,
 				TeamID: insertData.TeamID,
-				Sort:   insertData.Sort,
 			}
 
 			return record.InsertCreate(ctx, insertData.TeamID, userID, record.OperationOperateSaveEnv, insertData.Name)

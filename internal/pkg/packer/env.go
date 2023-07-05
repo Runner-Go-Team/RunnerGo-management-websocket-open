@@ -17,7 +17,6 @@ func TransEnvDataToRaoEnvList(envData []*model.TeamEnv, envServiceList []rao.Ser
 		resp = append(resp, rao.EnvListResp{
 			ID:          detail.ID,
 			Name:        detail.Name,
-			Sort:        detail.Sort,
 			TeamID:      detail.TeamID,
 			ServiceList: serviceListResp,
 		})

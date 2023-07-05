@@ -43,6 +43,31 @@ type ModeConf struct {
 	CreatedTimeSec   int64 `json:"created_time_sec"`  // 创建时间
 }
 
+type SendEditModeConf struct {
+	RoundNum         int64 `json:"round_num"`         // 轮次
+	Concurrency      int64 `json:"concurrency"`       // 并发数
+	ThresholdValue   int64 `json:"threshold_value"`   // 阈值
+	StartConcurrency int64 `json:"start_concurrency"` // 起始并发数
+	Step             int64 `json:"step"`              // 步长
+	StepRunTime      int64 `json:"step_run_time"`     // 步长执行时长
+	MaxConcurrency   int64 `json:"max_concurrency"`   // 最大并发数
+	Duration         int64 `json:"duration"`          // 稳定持续时长，持续时长
+	CreatedTimeSec   int64 `json:"created_time_sec"`  // 创建时间
+}
+
+type ChangeTakeConf struct {
+	RoundNum          int64               `json:"round_num"`           // 轮次
+	Concurrency       int64               `json:"concurrency"`         // 并发数
+	ThresholdValue    int64               `json:"threshold_value"`     // 阈值
+	StartConcurrency  int64               `json:"start_concurrency"`   // 起始并发数
+	Step              int64               `json:"step"`                // 步长
+	StepRunTime       int64               `json:"step_run_time"`       // 步长执行时长
+	MaxConcurrency    int64               `json:"max_concurrency"`     // 最大并发数
+	Duration          int64               `json:"duration"`            // 稳定持续时长，持续时长
+	CreatedTimeSec    int64               `json:"created_time_sec"`    // 创建时间
+	UsableMachineList []UsableMachineInfo `json:"usable_machine_list"` // 可选机器列表
+}
+
 type RunPlanReq struct {
 	PlanID  string   `json:"plan_id"`
 	TeamID  string   `json:"team_id"`
@@ -250,4 +275,26 @@ type SubscriptionStressPlanStatusChange struct {
 type MachineModeConf struct {
 	Machine  string   `json:"machine"`
 	ModeConf ModeConf `json:"mode_conf"`
+}
+
+type MachineDispatchModeConf struct {
+	MachineAllotType  int32               `json:"machine_allot_type"`  // 机器分配方式：0-权重，1-自定义
+	UsableMachineList []UsableMachineInfo `json:"usable_machine_list"` // 可选机器列表
+}
+
+type UsableMachineInfo struct {
+	MachineStatus    int32  `json:"machine_status"`    // 是否可用：1-使用中，2-已卸载
+	MachineName      string `json:"machine_name"`      // 机器名称
+	Region           string `json:"region"`            // 区域
+	Ip               string `json:"ip"`                // ip
+	Weight           int    `json:"weight"`            // 权重
+	RoundNum         int64  `json:"round_num"`         // 轮次
+	Concurrency      int64  `json:"concurrency"`       // 并发数
+	ThresholdValue   int64  `json:"threshold_value"`   // 阈值
+	StartConcurrency int64  `json:"start_concurrency"` // 起始并发数
+	Step             int64  `json:"step"`              // 步长
+	StepRunTime      int64  `json:"step_run_time"`     // 步长执行时长
+	MaxConcurrency   int64  `json:"max_concurrency"`   // 最大并发数
+	Duration         int64  `json:"duration"`          // 稳定持续时长，持续时长
+	CreatedTimeSec   int64  `json:"created_time_sec"`  // 创建时间
 }

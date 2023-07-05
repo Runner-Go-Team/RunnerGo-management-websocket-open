@@ -1,7 +1,7 @@
 package packer
 
 import (
-	"github.com/go-omnibus/proof"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
 	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -11,31 +11,36 @@ import (
 )
 
 func TransSaveFlowReqToMaoFlow(req *rao.SaveFlowReq) *mao.Flow {
-
 	nodes, err := bson.Marshal(mao.Node{Nodes: req.Nodes})
 	if err != nil {
-		proof.Errorf("flow.nodes bson marshal err %w", err)
+		log.Logger.Info("flow.nodes bson marshal err %w", err)
 	}
 
 	edges, err := bson.Marshal(mao.Edge{Edges: req.Edges})
 	if err != nil {
-		proof.Errorf("flow.edges bson marshal err %w", err)
+		log.Logger.Info("flow.edges bson marshal err %w", err)
+	}
+
+	prepositions, err := bson.Marshal(mao.Preposition{Prepositions: req.Prepositions})
+	if err != nil {
+		log.Logger.Info("flow.prepositions bson marshal err %w", err)
 	}
 
 	return &mao.Flow{
-		SceneID: req.SceneID,
-		TeamID:  req.TeamID,
-		Version: req.Version,
-		Nodes:   nodes,
-		Edges:   edges,
-		//MultiLevelNodes: req.MultiLevelNodes,
+		SceneID:      req.SceneID,
+		TeamID:       req.TeamID,
+		EnvID:        req.EnvID,
+		Version:      req.Version,
+		Nodes:        nodes,
+		Edges:        edges,
+		Prepositions: prepositions,
 	}
 }
 
 func TransMaoFlowToRaoSceneFlow(t *model.Target, f *mao.Flow, vis []*model.VariableImport, sceneVariables, variables []*model.Variable) *rao.SceneFlow {
 	var n mao.Node
 	if err := bson.Unmarshal(f.Nodes, &n); err != nil {
-		proof.Errorf("flow.nodes bson unmarshal err %w", err)
+		log.Logger.Info("flow.nodes bson unmarshal err %w", err)
 	}
 
 	var fileList []rao.FileList
@@ -81,12 +86,12 @@ func TransMaoFlowToRaoGetFowResp(f *mao.Flow) *rao.GetFlowResp {
 
 	var n mao.Node
 	if err := bson.Unmarshal(f.Nodes, &n); err != nil {
-		proof.Errorf("flow.nodes bson unmarshal err %w", err)
+		log.Logger.Info("flow.nodes bson unmarshal err %w", err)
 	}
 
 	var e mao.Edge
 	if err := bson.Unmarshal(f.Edges, &e); err != nil {
-		proof.Errorf("flow.edges bson unmarshal err %w", err)
+		log.Logger.Info("flow.edges bson unmarshal err %w", err)
 	}
 
 	return &rao.GetFlowResp{
@@ -104,12 +109,12 @@ func TransMaoFlowsToRaoFlows(flows []*mao.Flow) []*rao.Flow {
 	for _, f := range flows {
 		var n mao.Node
 		if err := bson.Unmarshal(f.Nodes, &n); err != nil {
-			proof.Errorf("flow.nodes bson unmarshal err %w", err)
+			log.Logger.Info("flow.nodes bson unmarshal err %w", err)
 		}
 
 		var e mao.Edge
 		if err := bson.Unmarshal(f.Edges, &e); err != nil {
-			proof.Errorf("flow.edges bson unmarshal err %w", err)
+			log.Logger.Info("flow.edges bson unmarshal err %w", err)
 		}
 
 		ret = append(ret, &rao.Flow{

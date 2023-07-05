@@ -133,7 +133,6 @@ func TransTargetToRaoAPIDetail(target *model.Target, api *mao.API, vs []*model.V
 			Query:       &query,
 			Event:       nil,
 			Cookie:      nil,
-			Resful:      nil,
 		},
 		Response:       nil,
 		Version:        target.Version,

@@ -14,6 +14,10 @@ func TransReportModelToRaoReportList(reports []*model.StressPlanReport, users []
 	}
 
 	for _, r := range reports {
+		nickName := ""
+		if userInfo, ok := memo[r.RunUserID]; ok {
+			nickName = userInfo.Nickname
+		}
 		ret = append(ret, &rao.StressPlanReport{
 			ReportID:    r.ReportID,
 			ReportName:  r.ReportName,
@@ -24,7 +28,7 @@ func TransReportModelToRaoReportList(reports []*model.StressPlanReport, users []
 			RunTimeSec:  r.CreatedAt.Unix(),
 			LastTimeSec: r.UpdatedAt.Unix(),
 			RunUserID:   r.RunUserID,
-			RunUserName: memo[r.RunUserID].Nickname,
+			RunUserName: nickName,
 			TeamID:      r.TeamID,
 			PlanID:      r.PlanID,
 			PlanName:    r.PlanName,

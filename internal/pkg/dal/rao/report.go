@@ -81,6 +81,8 @@ type ListMachineResp struct {
 type Metric struct {
 	IP          string          `json:"ip"`
 	MachineName string          `json:"machine_name"`
+	Region      string          `json:"region"`
+	Concurrency int64           `json:"concurrency"`
 	CPU         [][]interface{} `json:"cpu"`
 	Mem         [][]interface{} `json:"mem"`
 	NetIO       [][]interface{} `json:"net_io"`
@@ -107,22 +109,25 @@ type GetReportTaskDetailResp struct {
 }
 
 type ReportTask struct {
-	UserID         string      `json:"user_id"`
-	UserName       string      `json:"user_name"`
-	UserAvatar     string      `json:"user_avatar"`
-	PlanID         string      `json:"plan_id"`
-	PlanName       string      `json:"plan_name"`
-	SceneID        string      `json:"scene_id"`
-	SceneName      string      `json:"scene_name"`
-	ReportID       string      `json:"report_id"`
-	ReportName     string      `json:"report_name"`
-	CreatedTimeSec int64       `json:"created_time_sec"`
-	TaskType       int32       `json:"task_type"`
-	TaskMode       int32       `json:"task_mode"`
-	ControlMode    int32       `json:"control_mode"` // 控制模式
-	TaskStatus     int32       `json:"task_status"`
-	ModeConf       *ModeConf   `json:"mode_conf"`
-	ChangeTakeConf []*ModeConf `json:"change_take_conf"`
+	UserID            string           `json:"user_id"`
+	UserName          string           `json:"user_name"`
+	UserAvatar        string           `json:"user_avatar"`
+	PlanID            string           `json:"plan_id"`
+	PlanName          string           `json:"plan_name"`
+	SceneID           string           `json:"scene_id"`
+	SceneName         string           `json:"scene_name"`
+	ReportID          string           `json:"report_id"`
+	ReportName        string           `json:"report_name"`
+	CreatedTimeSec    int64            `json:"created_time_sec"`
+	TaskType          int32            `json:"task_type"`
+	TaskMode          int32            `json:"task_mode"`
+	ControlMode       int32            `json:"control_mode"` // 控制模式
+	DebugMode         string           `json:"debug_mode"`
+	TaskStatus        int32            `json:"task_status"`
+	ModeConf          ModeConf         `json:"mode_conf"`
+	ChangeTakeConf    []ChangeTakeConf `json:"change_take_conf"`
+	IsOpenDistributed int32            `json:"is_open_distributed"` // 是否开启分布式调度：0-关闭，1-开启
+	MachineAllotType  int32            `json:"machine_allot_type"`  // 机器分配方式：0-权重，1-自定义
 }
 
 type DebugSettingReq struct {

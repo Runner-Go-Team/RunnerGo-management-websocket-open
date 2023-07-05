@@ -590,7 +590,7 @@ func (s *MakeReport) Execute(baton *Baton) (int, error) {
 			TeamID:   baton.TeamID,
 			PlanID:   baton.plan.PlanID,
 			PlanName: baton.plan.PlanName,
-			ModeConf: &mao.ModeConf{
+			ModeConf: mao.ModeConf{
 				RoundNum:         baton.task[report.SceneID].ModeConf.RoundNum,
 				Concurrency:      baton.task[report.SceneID].ModeConf.Concurrency,
 				ThresholdValue:   baton.task[report.SceneID].ModeConf.ThresholdValue,

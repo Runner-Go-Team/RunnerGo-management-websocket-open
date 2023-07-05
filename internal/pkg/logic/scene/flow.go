@@ -18,18 +18,34 @@ import (
 func SaveFlow(ctx context.Context, req *rao.SaveFlowReq) (int, error) {
 	flow := packer.TransSaveFlowReqToMaoFlow(req)
 	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectFlow)
-
 	err := collection.FindOne(ctx, bson.D{{"scene_id", req.SceneID}}).Err()
 	if err == mongo.ErrNoDocuments { // 新建
 		_, err := collection.InsertOne(ctx, flow)
 		return errno.ErrMysqlFailed, err
 	}
-
 	_, err = collection.UpdateOne(ctx, bson.D{
 		{"scene_id", req.SceneID},
 	}, bson.M{"$set": flow})
 	if err != nil {
 		return errno.ErrMongoFailed, err
+	}
+
+	// 更新场景下所有用例的env_id
+	collection2 := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectSceneCaseFlow)
+	cur, err := collection2.Find(ctx, bson.D{{"scene_id", req.SceneID}})
+	if err != nil {
+		return errno.ErrMongoFailed, err
+	}
+	var sceneCaseFlow []*mao.SceneCaseFlow
+	if err = cur.All(ctx, &sceneCaseFlow); err != nil {
+		return errno.ErrMongoFailed, err
+	}
+
+	for _, caseFlowInfo := range sceneCaseFlow {
+		caseFlowInfo.EnvID = req.EnvID
+		_, err = collection2.UpdateOne(ctx, bson.D{
+			{"scene_case_id", caseFlowInfo.SceneCaseID},
+		}, bson.M{"$set": caseFlowInfo})
 	}
 
 	return errno.Ok, err

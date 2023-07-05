@@ -121,6 +121,9 @@ func ListMachines(ctx context.Context, req *rao.ListMachineReq) (rao.ListMachine
 		}
 		resp.Metrics = append(resp.Metrics, rao.Metric{
 			MachineName: machineInfo.Name,
+			IP:          machineInfo.IP,
+			Region:      machineInfo.Region,
+			Concurrency: machine.Concurrency,
 			CPU:         cpu,
 			Mem:         mem,
 			NetIO:       net,

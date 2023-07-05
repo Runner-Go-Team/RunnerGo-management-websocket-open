@@ -85,13 +85,14 @@ type Scene struct {
 }
 
 type SaveFlowReq struct {
-	SceneID string `json:"scene_id" binding:"required,gt=0"`
-	TeamID  string `json:"team_id" binding:"required,gt=0"`
-	Version int32  `json:"version"`
-
+	SceneID         string  `json:"scene_id" binding:"required,gt=0"`
+	TeamID          string  `json:"team_id" binding:"required,gt=0"`
+	Version         int32   `json:"version"`
+	EnvID           int64   `json:"env_id"`
 	Nodes           []*Node `json:"nodes"`
 	Edges           []*Edge `json:"edges"`
 	MultiLevelNodes string  `json:"multi_level_nodes"`
+	Prepositions    []Node  `json:"prepositions"`
 }
 
 type SaveFlowResp struct {
@@ -103,11 +104,10 @@ type Point struct {
 }
 
 type Node struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	IsCheck bool   `json:"is_check"`
-	IsHide  bool   `json:"is_hide"`
-
+	ID               string   `json:"id"`
+	Type             string   `json:"type"`
+	IsCheck          bool     `json:"is_check"`
+	IsHide           bool     `json:"is_hide"`
 	PositionAbsolute *Point   `json:"positionAbsolute"`
 	Position         *Point   `json:"position"`
 	PreList          []string `json:"pre_list"`
@@ -121,27 +121,19 @@ type Node struct {
 		ID   string `json:"id"`
 		From string `json:"from"`
 	} `json:"data"`
-
-	// 接口
-	Weight            int        `json:"weight,omitempty"`
+	Weight            int        `json:"weight,omitempty"` // 接口
 	Mode              int        `json:"mode,omitempty"`
 	ErrorThreshold    float64    `json:"error_threshold,omitempty"`
 	ResponseThreshold int        `json:"response_threshold,omitempty"`
 	RequestThreshold  int        `json:"request_threshold,omitempty"`
 	PercentAge        int        `json:"percent_age,omitempty"`
 	API               *APIDetail `json:"api,omitempty"`
-
-	// 全局断言
-	Assets []string `json:"assets,omitempty"`
-
-	// 等待控制器
-	WaitMs int `json:"wait_ms,omitempty"`
-
-	// 条件控制器
-	Var     string `json:"var,omitempty"`
-	Compare string `json:"compare,omitempty"`
-	Val     string `json:"val,omitempty"`
-	Remark  string `json:"remark"`
+	Assets            []string   `json:"assets,omitempty"`  // 全局断言
+	WaitMs            int        `json:"wait_ms,omitempty"` // 等待控制器
+	Var               string     `json:"var,omitempty"`     // 条件控制器
+	Compare           string     `json:"compare,omitempty"`
+	Val               string     `json:"val,omitempty"`
+	Remark            string     `json:"remark"`
 }
 
 type Edge struct {

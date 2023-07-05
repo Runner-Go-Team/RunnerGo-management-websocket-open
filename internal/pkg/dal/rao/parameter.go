@@ -156,16 +156,19 @@ type Resful struct {
 }
 
 type Request struct {
-	PreUrl      string  `json:"pre_url"`
-	URL         string  `json:"url"`
-	Description string  `json:"description"`
-	Auth        *Auth   `json:"auth"`
-	Body        *Body   `json:"body"`
-	Header      *Header `json:"header"`
-	Query       *Query  `json:"query"`
-	Event       *Event  `json:"event"`
-	Cookie      *Cookie `json:"cookie"`
-	Resful      *Resful `json:"resful"`
+	PreUrl       string       `json:"pre_url"`
+	URL          string       `json:"url"`
+	Method       string       `json:"method"`
+	Description  string       `json:"description"`
+	Auth         *Auth        `json:"auth"`
+	Body         *Body        `json:"body"`
+	Header       *Header      `json:"header"`
+	Query        *Query       `json:"query"`
+	Event        *Event       `json:"event"`
+	Cookie       *Cookie      `json:"cookie"`
+	Assert       []Assert     `json:"assert"`
+	Regex        []Regex      `json:"regex"`
+	HttpApiSetup HttpApiSetup `json:"http_api_setup"`
 }
 
 type Success struct {

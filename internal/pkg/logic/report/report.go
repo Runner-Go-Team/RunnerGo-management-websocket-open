@@ -71,9 +71,7 @@ func GetReportList(ctx context.Context, req *rao.ListReportsReq) ([]*rao.StressP
 		}
 	}
 
-	fmt.Println(111, req.StartTimeSec, req.EndTimeSec)
 	if req.StartTimeSec != 0 && req.EndTimeSec != 0 {
-		fmt.Println(222)
 		startTime := time.Unix(req.StartTimeSec, 0)
 		endTime := time.Unix(req.EndTimeSec, 0)
 		conditions = append(conditions, tx.CreatedAt.Between(startTime, endTime))
@@ -263,44 +261,44 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 	tx := dal.GetQuery().StressPlanReport
 	reportInfo, err := tx.WithContext(ctx).Where(tx.TeamID.Eq(req.TeamID), tx.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		log.Logger.Info("报告详情--查询报告基本信息失败，err:")
-		return nil, fmt.Errorf("报告不存在")
+		log.Logger.Info("报告详情--查询报告基本信息失败，err:", err)
+		errNew := fmt.Errorf("报告不存在")
+		return nil, errNew
 	}
 
-	var detail mao.ReportTask
+	detail := mao.ReportTask{}
 	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportTask)
 
-	err = collection.FindOne(ctx, bson.D{{"team_id", req.TeamID}, {"plan_id", reportInfo.PlanID}, {"report_id", req.ReportID}}).Decode(&detail)
+	err = collection.FindOne(ctx, bson.D{{"report_id", req.ReportID}}).Decode(&detail)
 	if err != nil {
-		log.Logger.Info("mongo decode err", proof.WithError(err))
+		log.Logger.Info("mongo decode err:", err)
 		return nil, err
 	}
 
 	r := query.Use(dal.DB()).StressPlanReport
 	ru, err := r.WithContext(ctx).Where(r.TeamID.Eq(req.TeamID), r.ReportID.Eq(req.ReportID)).First()
 	if err != nil {
-		log.Logger.Info("req not found err", proof.WithError(err))
+		log.Logger.Info("req not found err:", err)
 		return nil, err
 	}
 
-	u := query.Use(dal.DB()).User
-	user, err := u.WithContext(ctx).Where(u.UserID.Eq(ru.RunUserID)).First()
+	userTB := query.Use(dal.DB()).User
+	user, err := userTB.WithContext(ctx).Where(userTB.UserID.Eq(ru.RunUserID)).First()
 	if err != nil {
-		log.Logger.Info("user not found err", proof.WithError(err))
+		log.Logger.Info("user not found err:", err)
 		return nil, err
 	}
 
 	// 从mongo查出编辑报告的数据列表
 	collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectChangeReportConf)
-	ChangeTaskConfDetail, _ := collection.Find(ctx, bson.D{{"report_id", req.ReportID},
-		{"team_id", req.TeamID}, {"plan_id", reportInfo.PlanID}})
+	changeTaskConfDetail, _ := collection.Find(ctx, bson.D{{"report_id", req.ReportID}})
 
-	changeTaskConf := make([]*mao.ChangeTaskConf, 0, 10)
-	if err := ChangeTaskConfDetail.All(ctx, &changeTaskConf); err != nil {
-		log.Logger.Info("没有查到编辑报告列表数据", proof.WithError(err))
+	changeTaskConf := make([]mao.ChangeTaskConf, 0, 10)
+	if err := changeTaskConfDetail.All(ctx, &changeTaskConf); err != nil {
+		log.Logger.Info("没有查到编辑报告列表数据,err:", err)
 	}
 
-	modeConf := &rao.ModeConf{
+	modeConf := rao.ModeConf{
 		RoundNum:         detail.ModeConf.RoundNum,
 		Concurrency:      detail.ModeConf.Concurrency,
 		ThresholdValue:   detail.ModeConf.ThresholdValue,
@@ -312,55 +310,101 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 		CreatedTimeSec:   ru.CreatedAt.Unix(),
 	}
 
-	changeTaskConfData := &rao.ModeConf{
-		RoundNum:         detail.ModeConf.RoundNum,
-		Concurrency:      detail.ModeConf.Concurrency,
-		ThresholdValue:   detail.ModeConf.ThresholdValue,
-		StartConcurrency: detail.ModeConf.StartConcurrency,
-		Step:             detail.ModeConf.Step,
-		StepRunTime:      detail.ModeConf.StepRunTime,
-		MaxConcurrency:   detail.ModeConf.MaxConcurrency,
-		Duration:         detail.ModeConf.Duration,
-		CreatedTimeSec:   ru.CreatedAt.Unix(),
+	usableMachineList := make([]rao.UsableMachineInfo, 0, len(detail.MachineDispatchModeConf.UsableMachineList))
+	for _, v := range detail.MachineDispatchModeConf.UsableMachineList {
+		temp := rao.UsableMachineInfo{
+			MachineStatus:    v.MachineStatus,
+			MachineName:      v.MachineName,
+			Region:           v.Region,
+			Ip:               v.Ip,
+			Weight:           v.Weight,
+			RoundNum:         v.RoundNum,
+			Concurrency:      v.Concurrency,
+			ThresholdValue:   v.ThresholdValue,
+			StartConcurrency: v.StartConcurrency,
+			Step:             v.Step,
+			StepRunTime:      v.StepRunTime,
+			MaxConcurrency:   v.MaxConcurrency,
+			Duration:         v.Duration,
+			CreatedTimeSec:   v.CreatedTimeSec,
+		}
+		usableMachineList = append(usableMachineList, temp)
+	}
+
+	changeTaskConfData := rao.ChangeTakeConf{
+		RoundNum:          detail.ModeConf.RoundNum,
+		Concurrency:       detail.ModeConf.Concurrency,
+		ThresholdValue:    detail.ModeConf.ThresholdValue,
+		StartConcurrency:  detail.ModeConf.StartConcurrency,
+		Step:              detail.ModeConf.Step,
+		StepRunTime:       detail.ModeConf.StepRunTime,
+		MaxConcurrency:    detail.ModeConf.MaxConcurrency,
+		Duration:          detail.ModeConf.Duration,
+		CreatedTimeSec:    ru.CreatedAt.Unix(),
+		UsableMachineList: usableMachineList,
 	}
 
 	res := &rao.ReportTask{
-		UserID:         user.UserID,
-		UserName:       user.Nickname,
-		UserAvatar:     user.Avatar,
-		PlanID:         detail.PlanID,
-		PlanName:       detail.PlanName,
-		ReportID:       detail.ReportID,
-		ReportName:     reportInfo.ReportName,
-		SceneID:        ru.SceneID,
-		SceneName:      ru.SceneName,
-		CreatedTimeSec: ru.CreatedAt.Unix(),
-		TaskType:       detail.TaskType,
-		TaskMode:       detail.TaskMode,
-		ControlMode:    reportInfo.ControlMode,
-		TaskStatus:     ru.Status,
-		ModeConf:       modeConf,
+		UserID:            user.UserID,
+		UserName:          user.Nickname,
+		UserAvatar:        user.Avatar,
+		PlanID:            detail.PlanID,
+		PlanName:          detail.PlanName,
+		ReportID:          detail.ReportID,
+		ReportName:        reportInfo.ReportName,
+		SceneID:           ru.SceneID,
+		SceneName:         ru.SceneName,
+		CreatedTimeSec:    ru.CreatedAt.Unix(),
+		TaskType:          detail.TaskType,
+		TaskMode:          detail.TaskMode,
+		ControlMode:       detail.ControlMode,
+		DebugMode:         detail.DebugMode,
+		TaskStatus:        ru.Status,
+		ModeConf:          modeConf,
+		IsOpenDistributed: detail.IsOpenDistributed,
+		MachineAllotType:  detail.MachineDispatchModeConf.MachineAllotType,
 	}
 
 	res.ChangeTakeConf = append(res.ChangeTakeConf, changeTaskConfData)
 
 	if len(changeTaskConf) > 0 {
 		for _, changeTaskConfTmp := range changeTaskConf {
-			tmp := &rao.ModeConf{
-				RoundNum:         changeTaskConfTmp.ModeConf.RoundNum,
-				Concurrency:      changeTaskConfTmp.ModeConf.Concurrency,
-				ThresholdValue:   changeTaskConfTmp.ModeConf.ThresholdValue,
-				StartConcurrency: changeTaskConfTmp.ModeConf.StartConcurrency,
-				Step:             changeTaskConfTmp.ModeConf.Step,
-				StepRunTime:      changeTaskConfTmp.ModeConf.StepRunTime,
-				MaxConcurrency:   changeTaskConfTmp.ModeConf.MaxConcurrency,
-				Duration:         changeTaskConfTmp.ModeConf.Duration,
-				CreatedTimeSec:   changeTaskConfTmp.ModeConf.CreatedTimeSec,
+			usableMachineListTemp := make([]rao.UsableMachineInfo, 0, len(changeTaskConfTmp.MachineDispatchModeConf.UsableMachineList))
+			for _, v := range changeTaskConfTmp.MachineDispatchModeConf.UsableMachineList {
+				temp := rao.UsableMachineInfo{
+					MachineStatus:    v.MachineStatus,
+					MachineName:      v.MachineName,
+					Region:           v.Region,
+					Ip:               v.Ip,
+					Weight:           v.Weight,
+					RoundNum:         v.RoundNum,
+					Concurrency:      v.Concurrency,
+					ThresholdValue:   v.ThresholdValue,
+					StartConcurrency: v.StartConcurrency,
+					Step:             v.Step,
+					StepRunTime:      v.StepRunTime,
+					MaxConcurrency:   v.MaxConcurrency,
+					Duration:         v.Duration,
+					CreatedTimeSec:   v.CreatedTimeSec,
+				}
+				usableMachineListTemp = append(usableMachineListTemp, temp)
+			}
+
+			tmp := rao.ChangeTakeConf{
+				RoundNum:          changeTaskConfTmp.ModeConf.RoundNum,
+				Concurrency:       changeTaskConfTmp.ModeConf.Concurrency,
+				ThresholdValue:    changeTaskConfTmp.ModeConf.ThresholdValue,
+				StartConcurrency:  changeTaskConfTmp.ModeConf.StartConcurrency,
+				Step:              changeTaskConfTmp.ModeConf.Step,
+				StepRunTime:       changeTaskConfTmp.ModeConf.StepRunTime,
+				MaxConcurrency:    changeTaskConfTmp.ModeConf.MaxConcurrency,
+				Duration:          changeTaskConfTmp.ModeConf.Duration,
+				CreatedTimeSec:    changeTaskConfTmp.ModeConf.CreatedTimeSec,
+				UsableMachineList: usableMachineListTemp,
 			}
 			res.ChangeTakeConf = append(res.ChangeTakeConf, tmp)
 		}
 	}
-
 	return res, nil
 }
 

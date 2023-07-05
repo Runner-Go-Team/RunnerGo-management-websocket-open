@@ -52,11 +52,11 @@ type SaveCaseAssembleReq struct {
 }
 
 type SaveSceneCaseFlowReq struct {
-	SceneID     string `json:"scene_id" binding:"required,gt=0"`
-	SceneCaseID string `json:"scene_case_id" binding:"required,gt=0"`
-	TeamID      string `json:"team_id" binding:"required,gt=0"`
-	Version     int32  `json:"version"`
-
+	SceneID         string  `json:"scene_id" binding:"required,gt=0"`
+	SceneCaseID     string  `json:"scene_case_id" binding:"required,gt=0"`
+	TeamID          string  `json:"team_id" binding:"required,gt=0"`
+	EnvID           int64   `json:"env_id"`
+	Version         int32   `json:"version"`
 	Nodes           []*Node `json:"nodes"`
 	Edges           []*Edge `json:"edges"`
 	MultiLevelNodes string  `json:"multi_level_nodes"`

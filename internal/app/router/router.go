@@ -1,6 +1,7 @@
 package router
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -26,6 +27,13 @@ func RegisterRouter(r *gin.Engine) {
 	r.Use(ginZap.Ginzap(proof.Logger.Z, time.RFC3339, true))
 
 	r.Use(ginZap.RecoveryWithZap(proof.Logger.Z, true))
+
+	// 探活接口
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
 
 	// websocket相关接口
 	// 独立报告页面接口

@@ -10,7 +10,6 @@ import (
 )
 
 func TransSaveSceneCaseFlowReqToMaoFlow(req *rao.SaveSceneCaseFlowReq) *mao.SceneCaseFlow {
-
 	nodes, err := bson.Marshal(mao.Node{Nodes: req.Nodes})
 	if err != nil {
 		proof.Errorf("flow.nodes bson marshal err %w", err)
@@ -25,10 +24,10 @@ func TransSaveSceneCaseFlowReqToMaoFlow(req *rao.SaveSceneCaseFlowReq) *mao.Scen
 		SceneID:     req.SceneID,
 		SceneCaseID: req.SceneCaseID,
 		TeamID:      req.TeamID,
+		EnvID:       req.EnvID,
 		Version:     req.Version,
 		Nodes:       nodes,
 		Edges:       edges,
-		//MultiLevelNodes: req.MultiLevelNodes,
 	}
 }
 

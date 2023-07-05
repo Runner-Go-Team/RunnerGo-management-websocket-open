@@ -252,20 +252,17 @@ func SaveCaseAssemble(ctx *gin.Context, req *rao.SaveCaseAssembleReq) error {
 }
 
 func SaveSceneCaseFlow(ctx *gin.Context, req *rao.SaveSceneCaseFlowReq) error {
-
 	flow := packer.TransSaveSceneCaseFlowReqToMaoFlow(req)
 	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectSceneCaseFlow)
 
 	err := collection.FindOne(ctx, bson.D{{"scene_case_id", req.SceneCaseID}}).Err()
 	if err == mongo.ErrNoDocuments { // 新建
-		_, err := collection.InsertOne(ctx, flow)
-		return err
+		_, err = collection.InsertOne(ctx, flow)
+	} else {
+		_, err = collection.UpdateOne(ctx, bson.D{
+			{"scene_case_id", req.SceneCaseID},
+		}, bson.M{"$set": flow})
 	}
-
-	_, err = collection.UpdateOne(ctx, bson.D{
-		{"scene_case_id", req.SceneCaseID},
-	}, bson.M{"$set": flow})
-
 	return err
 }
 

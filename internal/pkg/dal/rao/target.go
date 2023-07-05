@@ -203,6 +203,51 @@ type APIDetail struct {
 	Variable       []*KVVariable `json:"variable"`      // 全局变量
 	Configuration  Configuration `json:"configuration"` // 场景配置
 	HttpApiSetup   HttpApiSetup  `json:"http_api_setup"`
+	EnvInfo        EnvInfo       `json:"env_info"`
+	SqlDetail      SqlDetail     `json:"sql_detail"` // mysql数据库详情
+}
+
+type SqlDetail struct {
+	SqlString       string          `json:"sql_string"`        // sql语句
+	Assert          []SqlAssert     `json:"assert"`            // 断言
+	Regex           []SqlRegex      `json:"regex"`             // 关联提取
+	SqlDatabaseInfo SqlDatabaseInfo `json:"sql_database_info"` // 使用的数据库信息
+}
+
+type SqlAssert struct {
+	IsChecked int    `json:"is_checked"`
+	Field     string `json:"field"`
+	Compare   string `json:"compare"`
+	Val       string `json:"val"`
+	Index     int    `json:"index"` // 断言时提取第几个值
+}
+
+type SqlRegex struct {
+	IsChecked int    `json:"is_checked"` // 1 选中, -1未选
+	Var       string `json:"var"`
+	Field     string `json:"field"`
+	Index     int    `json:"index"` // 正则时提取第几个值
+}
+
+type SqlDatabaseInfo struct {
+	Type       string `json:"type"`
+	ServerName string `json:"server_name"`
+	Host       string `json:"host"`
+	User       string `json:"user"`
+	Password   string `json:"password"`
+	Port       int32  `json:"port"`
+	DbName     string `json:"db_name"`
+	Charset    string `json:"charset"`
+}
+
+type EnvInfo struct {
+	EnvID       int64  `json:"env_id"`
+	EnvName     string `json:"env_name"`
+	ServiceID   int64  `json:"service_id"`
+	ServiceName string `json:"service_name"`
+	PreUrl      string `json:"pre_url"`
+	DatabaseID  int64  `json:"database_id"`
+	ServerName  string `json:"server_name"`
 }
 
 type KVVariable struct {

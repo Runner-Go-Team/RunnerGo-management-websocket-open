@@ -41,14 +41,10 @@ log:
   ErrPath:
 
 redis:
-  address:
-  password:
-  db:
+  # 集群地址 使用;分割 例如 127.0.0.1:7000;127.0.0.1:7001;127.0.0.1:7002;127.0.0.1:7003;127.0.0.1:7004;127.0.0.1:7005
+  clusterAddress : ""
+  password: ""
 
-redisReport:
-  address:
-  password:
-  db:
 
 smtp:
   host:

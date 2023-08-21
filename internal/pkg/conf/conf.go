@@ -119,14 +119,14 @@ type Proof struct {
 }
 
 type Redis struct {
-	Address  string `yaml:"address"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
+	ClusterAddress string `yaml:"clusterAddress"`
+	Password       string `yaml:"password"`
+	DB             int    `yaml:"db"`
 }
 type RedisReport struct {
-	Address  string `yaml:"address"`
-	Password string `yaml:"password"`
-	DB       int    `yaml:"db"`
+	ClusterAddress string `yaml:"clusterAddress"`
+	Password       string `yaml:"password"`
+	DB             int    `yaml:"db"`
 }
 
 type SMTP struct {
@@ -310,9 +310,9 @@ func initProof() {
 	}
 }
 func initRedis() {
-	Conf.Redis.Address = os.Getenv("RG_REDIS_ADDRESS")
-	if Conf.Redis.Address == "" {
-		Conf.Redis.Address = "127.0.0.0:6379"
+	Conf.Redis.ClusterAddress = os.Getenv("RG_REDIS_ADDRESS")
+	if Conf.Redis.ClusterAddress == "" {
+		Conf.Redis.ClusterAddress = "127.0.0.0:6379"
 	}
 	Conf.Redis.Password = os.Getenv("RG_REDIS_PASSWORD")
 
@@ -324,9 +324,9 @@ func initRedis() {
 	}
 }
 func initRedisReport() {
-	Conf.RedisReport.Address = os.Getenv("RG_REDIS_ADDRESS")
-	if Conf.RedisReport.Address == "" {
-		Conf.RedisReport.Address = "127.0.0.0:6379"
+	Conf.RedisReport.ClusterAddress = os.Getenv("RG_REDIS_ADDRESS")
+	if Conf.RedisReport.ClusterAddress == "" {
+		Conf.RedisReport.ClusterAddress = "127.0.0.0:6379"
 	}
 	Conf.RedisReport.Password = os.Getenv("RG_REDIS_PASSWORD")
 

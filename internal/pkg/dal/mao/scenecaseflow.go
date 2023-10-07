@@ -14,6 +14,7 @@ type SceneCaseFlow struct {
 	Version     int32    `bson:"version"`
 	Nodes       bson.Raw `bson:"nodes"`
 	Edges       bson.Raw `bson:"edges"`
+	PlanID      string   `bson:"plan_id"`
 }
 
 type SceneCaseFlowNode struct {

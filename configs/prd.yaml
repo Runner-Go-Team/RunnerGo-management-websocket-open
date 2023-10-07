@@ -1,6 +1,6 @@
 base:
   is_debug:
-  domain:
+  domain: ""
   max_concurrency:
 
 http:
@@ -23,14 +23,20 @@ jwt:
   issuer:
   secret:
 
-
 clients:
+  # 压力机相关接口
   runner:
-    run_api:
-    run_scene:
-    stop_scene:
-    run_plan:
-    stop_plan:
+    engine_domain:
+  # 权限接口相关
+  permission:
+    permission_domain:
+  # mock 服务
+  mock:
+    api_manager:
+    grpc_domain:
+    http_server:
+  manager:
+    domain:
 
 proof:
   info_log:
@@ -40,15 +46,16 @@ log:
   InfoPath:
   ErrPath:
 
+
 redis:
   address:
   password:
-  db:
+  db: 15
 
 redisReport:
   address:
   password:
-  db:
+  db: 15
 
 smtp:
   host:
@@ -76,3 +83,18 @@ machineConfig:
   CpuTopLimit: 65           # 可参与压测的压力机cpu使用率上限
   MemoryTopLimit: 65        # 可参与压测的压力机memory使用率上限
   DiskTopLimit: 55          # 可参与压测的压力机disk使用率上限
+
+# 一些时间相关的配置
+aboutTimeConfig:
+  defaultTokenExpireTime: 24  # 默认用户登录token的失效时间（单位：小时）
+  keepStressDebugLogTime: 1   # 保留性能测试的debug日志时间（单位：天）
+  keepMachineMonitorDataTime: 3 # 保存压力机监控数据时间（单位：天）
+
+# 企业初始化数据
+companyInitConfig:
+  Account:
+  Password:
+  Name:
+
+# licenses
+licenses:

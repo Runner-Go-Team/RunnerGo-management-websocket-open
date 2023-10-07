@@ -102,7 +102,8 @@ type ES struct {
 }
 
 type Clients struct {
-	Runner Runner
+	Runner  Runner
+	Manager Manager
 }
 
 type Runner struct {
@@ -111,6 +112,10 @@ type Runner struct {
 	StopScene string `mapstructure:"stop_scene"`
 	RunPlan   string `mapstructure:"run_plan"`
 	StopPlan  string `mapstructure:"stop_plan"`
+}
+
+type Manager struct {
+	Domain string `mapstructure:"domain"`
 }
 
 type Proof struct {
@@ -297,6 +302,10 @@ func initClients() {
 	Conf.Clients.Runner.StopPlan = os.Getenv("RG_CLIENTS_ENGINE_STOP_PLAN")
 	if Conf.Clients.Runner.StopPlan == "" {
 		Conf.Clients.Runner.StopPlan = "https://127.0.0.0:30000/runner/stop"
+	}
+	Conf.Clients.Manager.Domain = os.Getenv("RG_CLIENTS_MANAGER_DOMAIN")
+	if Conf.Clients.Manager.Domain == "" {
+		Conf.Clients.Manager.Domain = "https://127.0.0.0:30000"
 	}
 }
 func initProof() {

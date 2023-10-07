@@ -14,6 +14,7 @@ type Flow struct {
 	Nodes        bson.Raw `bson:"nodes"`
 	Edges        bson.Raw `bson:"edges"`
 	Prepositions bson.Raw `bson:"prepositions,omitempty"`
+	PlanID       string   `bson:"plan_id"`
 }
 
 type Preposition struct {
@@ -21,9 +22,9 @@ type Preposition struct {
 }
 
 type Node struct {
-	Nodes []*rao.Node `bson:"nodes"`
+	Nodes []rao.Node `bson:"nodes"`
 }
 
 type Edge struct {
-	Edges []*rao.Edge `bson:"edges"`
+	Edges []rao.Edge `bson:"edges"`
 }

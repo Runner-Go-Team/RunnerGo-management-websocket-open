@@ -36,9 +36,9 @@ type HttpApiSetup struct {
 }
 
 type Assert struct {
-	Assert []*rao.Assert `bson:"assert"`
+	Assert []rao.Assert `bson:"assert"`
 }
 
 type Regex struct {
-	Regex []*rao.Regex `bson:"regex"`
+	Regex []rao.Regex `bson:"regex"`
 }

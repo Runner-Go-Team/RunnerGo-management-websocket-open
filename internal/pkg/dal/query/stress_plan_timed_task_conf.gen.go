@@ -35,6 +35,10 @@ func newStressPlanTimedTaskConf(db *gorm.DB, opts ...gen.DOOption) stressPlanTim
 	_stressPlanTimedTaskConf.Frequency = field.NewInt32(tableName, "frequency")
 	_stressPlanTimedTaskConf.TaskExecTime = field.NewInt64(tableName, "task_exec_time")
 	_stressPlanTimedTaskConf.TaskCloseTime = field.NewInt64(tableName, "task_close_time")
+	_stressPlanTimedTaskConf.FixedIntervalStartTime = field.NewInt64(tableName, "fixed_interval_start_time")
+	_stressPlanTimedTaskConf.FixedIntervalTime = field.NewInt32(tableName, "fixed_interval_time")
+	_stressPlanTimedTaskConf.FixedRunNum = field.NewInt32(tableName, "fixed_run_num")
+	_stressPlanTimedTaskConf.FixedIntervalTimeType = field.NewInt32(tableName, "fixed_interval_time_type")
 	_stressPlanTimedTaskConf.TaskType = field.NewInt32(tableName, "task_type")
 	_stressPlanTimedTaskConf.TaskMode = field.NewInt32(tableName, "task_mode")
 	_stressPlanTimedTaskConf.ControlMode = field.NewInt32(tableName, "control_mode")
@@ -62,9 +66,13 @@ type stressPlanTimedTaskConf struct {
 	SceneID                 field.String // 场景id
 	TeamID                  field.String // 团队id
 	UserID                  field.String // 用户ID
-	Frequency               field.Int32  // 任务执行频次: 0-一次，1-每天，2-每周，3-每月
+	Frequency               field.Int32  // 任务执行频次: 0-一次，1-每天，2-每周，3-每月，4-固定时间间隔
 	TaskExecTime            field.Int64  // 任务执行时间
 	TaskCloseTime           field.Int64  // 任务结束时间
+	FixedIntervalStartTime  field.Int64  // 固定时间间隔开始时间
+	FixedIntervalTime       field.Int32  // 固定间隔时间
+	FixedRunNum             field.Int32  // 固定执行次数
+	FixedIntervalTimeType   field.Int32  // 固定间隔时间类型：0-分钟，1-小时
 	TaskType                field.Int32  // 任务类型：1-普通任务，2-定时任务
 	TaskMode                field.Int32  // 压测模式：1-并发模式，2-阶梯模式，3-错误率模式，4-响应时间模式，5-每秒请求数模式，6 -每秒事务数模式
 	ControlMode             field.Int32  // 控制模式：0-集中模式，1-单独模式
@@ -101,6 +109,10 @@ func (s *stressPlanTimedTaskConf) updateTableName(table string) *stressPlanTimed
 	s.Frequency = field.NewInt32(table, "frequency")
 	s.TaskExecTime = field.NewInt64(table, "task_exec_time")
 	s.TaskCloseTime = field.NewInt64(table, "task_close_time")
+	s.FixedIntervalStartTime = field.NewInt64(table, "fixed_interval_start_time")
+	s.FixedIntervalTime = field.NewInt32(table, "fixed_interval_time")
+	s.FixedRunNum = field.NewInt32(table, "fixed_run_num")
+	s.FixedIntervalTimeType = field.NewInt32(table, "fixed_interval_time_type")
 	s.TaskType = field.NewInt32(table, "task_type")
 	s.TaskMode = field.NewInt32(table, "task_mode")
 	s.ControlMode = field.NewInt32(table, "control_mode")
@@ -137,7 +149,7 @@ func (s *stressPlanTimedTaskConf) GetFieldByName(fieldName string) (field.OrderE
 }
 
 func (s *stressPlanTimedTaskConf) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 20)
+	s.fieldMap = make(map[string]field.Expr, 24)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["plan_id"] = s.PlanID
 	s.fieldMap["scene_id"] = s.SceneID
@@ -146,6 +158,10 @@ func (s *stressPlanTimedTaskConf) fillFieldMap() {
 	s.fieldMap["frequency"] = s.Frequency
 	s.fieldMap["task_exec_time"] = s.TaskExecTime
 	s.fieldMap["task_close_time"] = s.TaskCloseTime
+	s.fieldMap["fixed_interval_start_time"] = s.FixedIntervalStartTime
+	s.fieldMap["fixed_interval_time"] = s.FixedIntervalTime
+	s.fieldMap["fixed_run_num"] = s.FixedRunNum
+	s.fieldMap["fixed_interval_time_type"] = s.FixedIntervalTimeType
 	s.fieldMap["task_type"] = s.TaskType
 	s.fieldMap["task_mode"] = s.TaskMode
 	s.fieldMap["control_mode"] = s.ControlMode

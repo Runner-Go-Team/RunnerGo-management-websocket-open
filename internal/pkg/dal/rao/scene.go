@@ -85,14 +85,16 @@ type Scene struct {
 }
 
 type SaveFlowReq struct {
-	SceneID         string  `json:"scene_id" binding:"required,gt=0"`
-	TeamID          string  `json:"team_id" binding:"required,gt=0"`
-	Version         int32   `json:"version"`
-	EnvID           int64   `json:"env_id"`
-	Nodes           []*Node `json:"nodes"`
-	Edges           []*Edge `json:"edges"`
-	MultiLevelNodes string  `json:"multi_level_nodes"`
-	Prepositions    []Node  `json:"prepositions"`
+	PlanID          string `json:"plan_id"`
+	SceneID         string `json:"scene_id" binding:"required,gt=0"`
+	TeamID          string `json:"team_id" binding:"required,gt=0"`
+	Version         int32  `json:"version"`
+	Source          int32  `json:"source"`
+	EnvID           int64  `json:"env_id"`
+	Nodes           []Node `json:"nodes"`
+	Edges           []Edge `json:"edges"`
+	MultiLevelNodes string `json:"multi_level_nodes"`
+	Prepositions    []Node `json:"prepositions"`
 }
 
 type SaveFlowResp struct {
@@ -107,6 +109,7 @@ type Node struct {
 	ID               string   `json:"id"`
 	Type             string   `json:"type"`
 	IsCheck          bool     `json:"is_check"`
+	IsDisabled       int      `json:"is_disabled"` // 0-不禁用，1-只禁用该接口，2-禁用该接口以及下属链条
 	IsHide           bool     `json:"is_hide"`
 	PositionAbsolute *Point   `json:"positionAbsolute"`
 	Position         *Point   `json:"position"`
@@ -121,19 +124,19 @@ type Node struct {
 		ID   string `json:"id"`
 		From string `json:"from"`
 	} `json:"data"`
-	Weight            int        `json:"weight,omitempty"` // 接口
-	Mode              int        `json:"mode,omitempty"`
-	ErrorThreshold    float64    `json:"error_threshold,omitempty"`
-	ResponseThreshold int        `json:"response_threshold,omitempty"`
-	RequestThreshold  int        `json:"request_threshold,omitempty"`
-	PercentAge        int        `json:"percent_age,omitempty"`
-	API               *APIDetail `json:"api,omitempty"`
-	Assets            []string   `json:"assets,omitempty"`  // 全局断言
-	WaitMs            int        `json:"wait_ms,omitempty"` // 等待控制器
-	Var               string     `json:"var,omitempty"`     // 条件控制器
-	Compare           string     `json:"compare,omitempty"`
-	Val               string     `json:"val,omitempty"`
-	Remark            string     `json:"remark"`
+	Weight            int       `json:"weight,omitempty"` // 接口
+	Mode              int       `json:"mode,omitempty"`
+	ErrorThreshold    float64   `json:"error_threshold,omitempty"`
+	ResponseThreshold int       `json:"response_threshold,omitempty"`
+	RequestThreshold  int       `json:"request_threshold,omitempty"`
+	PercentAge        int       `json:"percent_age,omitempty"`
+	API               APIDetail `json:"api,omitempty"`
+	Assets            []string  `json:"assets,omitempty"`  // 全局断言
+	WaitMs            int       `json:"wait_ms,omitempty"` // 等待控制器
+	Var               string    `json:"var,omitempty"`     // 条件控制器
+	Compare           string    `json:"compare,omitempty"`
+	Val               string    `json:"val,omitempty"`
+	Remark            string    `json:"remark"`
 }
 
 type Edge struct {
@@ -175,9 +178,9 @@ type GetFlowResp struct {
 	TeamID  string `json:"team_id"`
 	Version int32  `json:"version"`
 
-	Nodes           []*Node `json:"nodes"`
-	Edges           []*Edge `json:"edges"`
-	MultiLevelNodes []byte  `json:"multi_level_nodes"`
+	Nodes           []Node `json:"nodes"`
+	Edges           []Edge `json:"edges"`
+	MultiLevelNodes []byte `json:"multi_level_nodes"`
 }
 
 type BatchGetFlowReq struct {
@@ -194,18 +197,18 @@ type Flow struct {
 	TeamID  string `json:"team_id"`
 	Version int32  `json:"version"`
 
-	Nodes           []*Node `json:"nodes"`
-	Edges           []*Edge `json:"edges"`
-	MultiLevelNodes []byte  `json:"multi_level_nodes"`
+	Nodes           []Node `json:"nodes"`
+	Edges           []Edge `json:"edges"`
+	MultiLevelNodes []byte `json:"multi_level_nodes"`
 }
 
 type SceneFlow struct {
 	SceneID       string        `json:"scene_id"`
 	SceneName     string        `json:"scene_name"`
 	TeamID        string        `json:"team_id"`
-	Nodes         []*Node       `json:"nodes"`
+	Nodes         []Node        `json:"nodes"`
 	Configuration Configuration `json:"configuration"`
-	Variable      []*KVVariable `json:"variable"` // 全局变量
+	Variable      []KVVariable  `json:"variable"` // 全局变量
 }
 
 type Configuration struct {

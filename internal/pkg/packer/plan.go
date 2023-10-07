@@ -1,12 +1,8 @@
 package packer
 
 import (
-	"encoding/json"
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/model"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
-	"time"
 )
 
 func TransPlansToRaoPlanList(plans []*model.StressPlan, users []*model.User) []*rao.StressPlan {
@@ -64,46 +60,5 @@ func TransTaskToRaoPlan(p *model.StressPlan, t rao.ModeConf, u *model.User) *rao
 		CreatedTimeSec:    p.CreatedAt.Unix(),
 		UpdatedTimeSec:    p.UpdatedAt.Unix(),
 		ModeConf:          &mc,
-	}
-}
-
-func TransSaveTimingTaskConfigReqToModelData(req *rao.SavePlanConfReq, userID string) (*model.StressPlanTimedTaskConf, error) {
-	// 把mode_conf压缩成字符串
-	modeConfString, err := json.Marshal(req.ModeConf)
-	if err != nil {
-		return nil, err
-	}
-	return &model.StressPlanTimedTaskConf{
-		PlanID:        req.PlanID,
-		SceneID:       req.SceneID,
-		TeamID:        req.TeamID,
-		UserID:        userID,
-		Frequency:     req.TimedTaskConf.Frequency,
-		TaskExecTime:  req.TimedTaskConf.TaskExecTime,
-		TaskCloseTime: req.TimedTaskConf.TaskCloseTime,
-		TaskType:      req.TaskType,
-		TaskMode:      req.Mode,
-		ControlMode:   req.ControlMode,
-		ModeConf:      string(modeConfString),
-		Status:        consts.TimedTaskWaitEnable,
-	}, nil
-}
-
-func TransChangeReportConfRunToMao(req rao.ChangeTaskConfReq) *mao.ChangeTaskConf {
-	return &mao.ChangeTaskConf{
-		ReportID: req.ReportID,
-		TeamID:   req.TeamID,
-		PlanID:   req.PlanID,
-		ModeConf: &mao.ModeConf{
-			RoundNum:         req.ModeConf.RoundNum,
-			Concurrency:      req.ModeConf.Concurrency,
-			ThresholdValue:   req.ModeConf.ThresholdValue,
-			StartConcurrency: req.ModeConf.StartConcurrency,
-			Step:             req.ModeConf.Step,
-			StepRunTime:      req.ModeConf.StepRunTime,
-			MaxConcurrency:   req.ModeConf.MaxConcurrency,
-			Duration:         req.ModeConf.Duration,
-			CreatedTimeSec:   time.Now().Unix(),
-		},
 	}
 }

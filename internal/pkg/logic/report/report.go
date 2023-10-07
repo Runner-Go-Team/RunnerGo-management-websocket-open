@@ -4,13 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/team"
-	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"math"
 	"strconv"
 	"time"
 
@@ -20,8 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"gorm.io/gen"
 
-	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/record"
-
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/consts"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
@@ -29,12 +22,6 @@ import (
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/packer"
 )
-
-func CountByTeamID(ctx context.Context, teamID string) (int64, error) {
-	tx := query.Use(dal.DB()).StressPlanReport
-
-	return tx.WithContext(ctx).Where(tx.TeamID.Eq(teamID)).Count()
-}
 
 func GetReportList(ctx context.Context, req *rao.ListReportsReq) ([]*rao.StressPlanReport, int64, error) {
 
@@ -200,62 +187,6 @@ func KeywordFindUser(ctx context.Context, teamID string, keyword string) ([]stri
 	return reportIDs, nil
 }
 
-func DeleteReport(ctx context.Context, req *rao.DeleteReportReq, userID string) error {
-	allErr := dal.GetQuery().Transaction(func(tx *query.Query) error {
-		reportInfo, err := tx.StressPlanReport.WithContext(ctx).Where(tx.StressPlanReport.TeamID.Eq(req.TeamID), tx.StressPlanReport.ReportID.Eq(req.ReportID)).First()
-		if err != nil {
-			return err
-		}
-
-		if _, err := tx.StressPlanReport.WithContext(ctx).Where(tx.StressPlanReport.TeamID.Eq(req.TeamID), tx.StressPlanReport.ReportID.Eq(req.ReportID)).Delete(); err != nil {
-			return err
-		}
-
-		// 删除报告对应机器信息
-		if _, err := tx.ReportMachine.WithContext(ctx).Where(tx.ReportMachine.TeamID.Eq(reportInfo.TeamID),
-			tx.ReportMachine.PlanID.Eq(reportInfo.PlanID),
-			tx.ReportMachine.ReportID.Eq(reportInfo.ReportID)).Delete(); err != nil {
-			return err
-		}
-
-		// 把mongodb库里面的报告详情数据删掉
-		collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportData)
-		findFilter := bson.D{{"report_id", req.ReportID}, {"team_id", req.TeamID}}
-		_, err = collection.DeleteOne(ctx, findFilter)
-		if err != nil {
-			log.Logger.Info("report_data：删除失败")
-		}
-
-		// 把mongodb库里面的报告详情数据删掉
-		collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportTask)
-		findFilter = bson.D{{"report_id", req.ReportID}, {"team_id", req.TeamID}}
-		_, err = collection.DeleteOne(ctx, findFilter)
-		if err != nil {
-			log.Logger.Info("report_task：删除失败")
-		}
-
-		// 把mongodb库里面的报告详情数据删掉
-		collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectChangeReportConf)
-		findFilter = bson.D{{"report_id", req.ReportID}, {"team_id", req.TeamID}}
-		_, err = collection.DeleteOne(ctx, findFilter)
-		if err != nil {
-			log.Logger.Info("change_report_conf：删除失败")
-		}
-
-		if err := record.InsertDelete(ctx, req.TeamID, userID, record.OperationOperateDeleteReport, fmt.Sprintf("%s %s", reportInfo.PlanName, reportInfo.SceneName)); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if allErr != nil {
-		log.Logger.Info("DeleteReport：删除失败")
-		return allErr
-	}
-
-	return nil
-}
-
 func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.ReportTask, error) {
 	// 查询报告是否被删除
 	tx := dal.GetQuery().StressPlanReport
@@ -404,74 +335,6 @@ func GetTaskDetail(ctx context.Context, req rao.GetReportTaskDetailReq) (*rao.Re
 			}
 			res.ChangeTakeConf = append(res.ChangeTakeConf, tmp)
 		}
-	}
-	return res, nil
-}
-
-func GetReportDebugStatus(ctx context.Context, req rao.GetReportReq) string {
-	reportId := req.ReportID
-	//reportId := report.ReportID
-	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectDebugStatus)
-	filter := bson.D{{"report_id", reportId}, {"team_id", req.TeamID}, {"plan_id", req.PlanId}}
-	//fmt.Println("filter:", filter)
-	cur := collection.FindOne(ctx, filter)
-	result, err := cur.DecodeBytes()
-	if err != nil {
-		return consts.StopDebug
-	}
-	list, err := result.Elements()
-	if err != nil {
-		return consts.StopDebug
-	}
-	for _, value := range list {
-		if value.Key() == "debug" {
-			return value.Value().StringValue()
-		}
-	}
-	return consts.StopDebug
-}
-
-func GetReportDebugLog(ctx context.Context, report rao.GetReportReq) ([]map[string]interface{}, error) {
-	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectStressDebug)
-	filter := bson.D{{"report_id", report.ReportID}, {"team_id", report.TeamID}}
-	// 查询数据并限制返回的数量
-	findOptions := options.Find().SetLimit(100)
-	cur, err := collection.Find(ctx, filter, findOptions)
-	if err != nil {
-		log.Logger.Info("debug日志查询失败", proof.WithError(err))
-		return nil, err
-	}
-
-	var debugMsgListTemp []map[string]interface{}
-	if err = cur.All(ctx, &debugMsgListTemp); err != nil {
-		return nil, err
-	}
-
-	res := make([]map[string]interface{}, 0, len(debugMsgListTemp))
-
-	debugMsgList := make([]map[string]interface{}, 0, len(debugMsgListTemp))
-	for _, debugMsg := range debugMsgListTemp {
-		// 删除无用的字段
-		delete(debugMsg, "_id")
-		delete(debugMsg, "api_id")
-		delete(debugMsg, "assertion_failed_num")
-		delete(debugMsg, "assertion_num")
-		delete(debugMsg, "case_id")
-		delete(debugMsg, "event_id")
-		delete(debugMsg, "next_list")
-		delete(debugMsg, "parent_id")
-		delete(debugMsg, "plan_id")
-		delete(debugMsg, "report_id")
-		delete(debugMsg, "scene_id")
-		delete(debugMsg, "team_id")
-		delete(debugMsg, "type")
-		delete(debugMsg, "uuid")
-		debugMsgList = append(debugMsgList, debugMsg)
-	}
-	// 限制debug日志数量
-	if len(debugMsgList) > 100 {
-		startIndex := len(debugMsgList) - 100
-		res = debugMsgList[startIndex:]
 	}
 	return res, nil
 }
@@ -751,11 +614,6 @@ type ResultDataMsg struct {
 	NinetyNineList                 []TimeValue `json:"ninety_nine_list" bson:"ninety_nine_list"`
 }
 
-type reportDataFmt struct {
-	ReportID string `json:"report_id" bson:"report_id"`
-	//Data     ResultData `json:"data" bson:"data"`
-	Data string `json:"data" bson:"data"`
-}
 type ResultData struct {
 	End         bool                      `json:"end" bson:"end"`
 	ReportId    string                    `json:"report_id" bson:"report_id"`
@@ -774,177 +632,6 @@ type ResultData struct {
 type TimeValue struct {
 	TimeStamp int64       `json:"time_stamp" bson:"time_stamp"`
 	Value     interface{} `json:"value" bson:"value"`
-}
-
-// GetCompareReportData 获取报告对比数据
-func GetCompareReportData(ctx context.Context, req rao.CompareReportReq) (*CompareReportResponse, error) {
-	// 获取报告的基本信息
-	reportTable := dal.GetQuery().StressPlanReport
-	reportBaseList, err := reportTable.WithContext(ctx).Where(reportTable.TeamID.Eq(req.TeamID), reportTable.ReportID.In(req.ReportIDs...)).Find()
-	if err != nil {
-		return nil, err
-	}
-
-	reportNames := make([]string, 0, len(reportBaseList))                                 // 计划和场景名字
-	reportBaseResponse := make([]*reportBaseFormat, 0, len(reportBaseList))               // 报告基本信息
-	reportCollectAllDataResponse := make([]*reportCollectAllData, 0, len(reportBaseList)) // 报告汇总信息
-	reportDetailAllDataResponse := make([]reportDetailAllData, 0, len(reportBaseList))    // 报告详情信息
-
-	// 用户id集合
-	var runUserIds []string
-	reportNamesMap := make(map[string]string, len(req.ReportIDs))
-	reportUserMap := make(map[string]string, len(req.ReportIDs))
-	reportRunTimeMap := make(map[string]time.Time, len(req.ReportIDs))
-	for _, reportBaseInfo := range reportBaseList {
-		// 把报告基本信息设置到map当中
-		planAndSceneName := reportBaseInfo.PlanName + "/" + reportBaseInfo.SceneName
-		reportNames = append(reportNames, planAndSceneName)
-		// 组装报告id和计划/场景名映射
-		reportNamesMap[reportBaseInfo.ReportID] = planAndSceneName
-		// 组装报告和运行人id的映射
-		reportUserMap[reportBaseInfo.ReportID] = reportBaseInfo.RunUserID
-		// 组装报告和报告运行时间映射
-		reportRunTimeMap[reportBaseInfo.ReportID] = reportBaseInfo.CreatedAt
-
-		// 组装用户id集合
-		runUserIds = append(runUserIds, reportBaseInfo.RunUserID)
-
-	}
-
-	// 查出用户信息
-	userTable := dal.GetQuery().User
-	userList, err := userTable.WithContext(ctx).Where(userTable.UserID.In(runUserIds...)).Find()
-	if err != nil {
-		proof.Errorf("对比报告--查询用户信息失败，err:", err)
-		return nil, err
-	}
-	// 用户Id和名称映射数据
-	userMap := make(map[string]string)
-	for _, userInfo := range userList {
-		userMap[userInfo.UserID] = userInfo.Nickname
-	}
-
-	// 从mg查询任务对应的配置信息
-	var reportTaskConfList []*mao.ReportTask
-	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportTask)
-	reportTaskConfListTmp, err := collection.Find(ctx, bson.D{{"team_id", req.TeamID}, {"report_id", bson.D{{"$in", req.ReportIDs}}}})
-	if err != nil {
-		proof.Errorf("对比报告--从mongodb查询任务配置信息失败，err:", err)
-		return nil, err
-	}
-	if err := reportTaskConfListTmp.All(ctx, &reportTaskConfList); err != nil {
-		proof.Errorf("对比报告--从mongodb解析任务配置信息失败，err:", err)
-		return nil, err
-	}
-
-	reportBaseTmp := new(reportBaseFormat)
-	for _, reportTaskConfInfo := range reportTaskConfList {
-		year := reportRunTimeMap[reportTaskConfInfo.ReportID].Year()
-		month := reportRunTimeMap[reportTaskConfInfo.ReportID].Month()
-		day := reportRunTimeMap[reportTaskConfInfo.ReportID].Day()
-		hour := reportRunTimeMap[reportTaskConfInfo.ReportID].Hour()
-		minute := reportRunTimeMap[reportTaskConfInfo.ReportID].Minute()
-		second := reportRunTimeMap[reportTaskConfInfo.ReportID].Second()
-
-		reportBaseTmp = &reportBaseFormat{
-			ReportID:         reportTaskConfInfo.ReportID,
-			Name:             reportNamesMap[reportTaskConfInfo.ReportID],
-			Performer:        userMap[reportUserMap[reportTaskConfInfo.ReportID]],
-			CreatedTimeSec:   fmt.Sprintf("%d-%d-%d %d:%d:%d", year, month, day, hour, minute, second),
-			TaskType:         reportTaskConfInfo.TaskType,
-			TaskMode:         reportTaskConfInfo.TaskMode,
-			StartConcurrency: reportTaskConfInfo.ModeConf.StartConcurrency,
-			Step:             reportTaskConfInfo.ModeConf.Step,
-			StepRunTime:      reportTaskConfInfo.ModeConf.StepRunTime,
-			MaxConcurrency:   reportTaskConfInfo.ModeConf.MaxConcurrency,
-			Duration:         reportTaskConfInfo.ModeConf.Duration,
-			Concurrency:      reportTaskConfInfo.ModeConf.Concurrency,
-			RoundNum:         reportTaskConfInfo.ModeConf.RoundNum,
-		}
-		reportBaseResponse = append(reportBaseResponse, reportBaseTmp)
-	}
-
-	// 从mg里面获取报告汇总信息
-	var sceneTestResultDataMsgSlice []*reportDataFmt
-	collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportData)
-	reportDataListTmp, err := collection.Find(ctx, bson.D{{"team_id", req.TeamID}, {"report_id", bson.D{{"$in", req.ReportIDs}}}})
-	if err != nil {
-		proof.Errorf("对比报告--从mongodb查询报告数据失败，err:", err)
-		return nil, err
-	}
-	if err := reportDataListTmp.All(ctx, &sceneTestResultDataMsgSlice); err != nil {
-		proof.Errorf("对比报告--从mongodb解析报告数据失败，err:", err)
-		return nil, err
-	}
-
-	// 先组装一个事件id对应报告结果数据
-	for _, sceneTestResultData := range sceneTestResultDataMsgSlice {
-		var sceneTestResultDataTmp ResultData
-		err := json.Unmarshal([]byte(sceneTestResultData.Data), &sceneTestResultDataTmp)
-		if err != nil {
-			proof.Errorf("对比报告--解析报告详情数据失败，err:", err)
-			return nil, err
-		}
-		reportCollectDataSlice := make([]reportCollectData, 0, len(req.ReportIDs))
-		reportCollectDataMap := make(map[string]*reportDetailData, len(req.ReportIDs))
-		for apiId, resultsInfo := range sceneTestResultDataTmp.Results {
-			reportCollectDataOne := reportCollectData{
-				ApiName:                        resultsInfo.ApiName,
-				TotalRequestNum:                resultsInfo.TotalRequestNum,
-				TotalRequestTime:               resultsInfo.TotalRequestTime,
-				MaxRequestTime:                 resultsInfo.MaxRequestTime,
-				MinRequestTime:                 resultsInfo.MinRequestTime,
-				AvgRequestTime:                 resultsInfo.AvgRequestTime,
-				FiftyRequestTimelineValue:      resultsInfo.FiftyRequestTimelineValue,
-				NinetyRequestTimeLineValue:     resultsInfo.NinetyRequestTimeLineValue,
-				NinetyFiveRequestTimeLineValue: resultsInfo.NinetyFiveRequestTimeLineValue,
-				NinetyNineRequestTimeLineValue: resultsInfo.NinetyNineRequestTimeLineValue,
-				Rps:                            resultsInfo.Rps,
-				SRps:                           resultsInfo.SRps,
-				Tps:                            resultsInfo.Tps,
-				STps:                           resultsInfo.STps,
-				ErrorRate:                      resultsInfo.ErrorRate,
-				ReceivedBytes:                  resultsInfo.ReceivedBytes,
-				SendBytes:                      resultsInfo.SendBytes,
-			}
-			reportCollectDataSlice = append(reportCollectDataSlice, reportCollectDataOne)
-
-			reportCollectDataMap[apiId] = &reportDetailData{
-				ApiName:         resultsInfo.ApiName,
-				AvgList:         resultsInfo.AvgList,
-				RpsList:         resultsInfo.RpsList,
-				ConcurrencyList: resultsInfo.ConcurrencyList,
-				TpsList:         resultsInfo.TpsList,
-				FiftyList:       resultsInfo.FiftyList,
-				NinetyList:      resultsInfo.NinetyList,
-				NinetyFiveList:  resultsInfo.NinetyFiveList,
-				NinetyNineList:  resultsInfo.NinetyNineList,
-			}
-		}
-		reportCollectAllDataResponse = append(reportCollectAllDataResponse, &reportCollectAllData{
-			Name: reportNamesMap[sceneTestResultData.ReportID],
-			Data: reportCollectDataSlice,
-		})
-
-		timeLayout := "2006-01-02 15:04:05"
-		createdTime := time.Unix(sceneTestResultDataTmp.TimeStamp, 0).Format(timeLayout)
-
-		reportDetailAllDataTemp := reportDetailAllData{
-			Name: reportNamesMap[sceneTestResultData.ReportID],
-			Time: createdTime,
-			Data: reportCollectDataMap,
-		}
-		reportDetailAllDataResponse = append(reportDetailAllDataResponse, reportDetailAllDataTemp)
-	}
-
-	res := &CompareReportResponse{
-		ReportNamesData:     reportNames,
-		ReportBaseData:      reportBaseResponse,
-		ReportCollectData:   reportCollectAllDataResponse,
-		ReportDetailAllData: reportDetailAllDataResponse,
-	}
-
-	return res, nil
 }
 
 type reportBaseFormat struct {
@@ -1013,187 +700,4 @@ type CompareReportResponse struct {
 	ReportBaseData      []*reportBaseFormat     `json:"report_base_data"`
 	ReportCollectData   []*reportCollectAllData `json:"report_collect_data"`
 	ReportDetailAllData []reportDetailAllData   `json:"report_detail_all_data"`
-}
-
-// UpdateDescription 保存或更新报告描述
-func UpdateDescription(ctx *gin.Context, req rao.UpdateDescriptionReq) error {
-	updateMap := make(map[string]string, 1)
-	updateMap["description"] = req.Description
-	// 修改mg数据
-	collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportData)
-	_, err := collection.UpdateOne(ctx, bson.D{{"team_id", req.TeamID}, {"report_id", req.ReportID}}, bson.M{"$set": updateMap})
-	if err != nil {
-		proof.Errorf("保存或更新报告描述--操作mg失败，err:", err)
-		return err
-	}
-	return nil
-}
-
-func BatchDeleteReport(ctx *gin.Context, req *rao.BatchDeleteReportReq) error {
-	userID := jwt.GetUserIDByCtx(ctx)
-	allErr := dal.GetQuery().Transaction(func(tx *query.Query) error {
-		reportList, err := tx.StressPlanReport.WithContext(ctx).Where(tx.StressPlanReport.TeamID.Eq(req.TeamID), tx.StressPlanReport.ReportID.In(req.ReportIDs...)).Find()
-		if err != nil {
-			return err
-		}
-
-		if len(reportList) == 0 {
-			return fmt.Errorf("没有找到要删除的报告")
-		}
-
-		if _, err := tx.StressPlanReport.WithContext(ctx).Where(tx.StressPlanReport.TeamID.Eq(req.TeamID), tx.StressPlanReport.ReportID.In(req.ReportIDs...)).Delete(); err != nil {
-			return err
-		}
-
-		// 删除报告对应机器信息
-		if _, err := tx.ReportMachine.WithContext(ctx).Where(tx.ReportMachine.TeamID.Eq(req.TeamID),
-			tx.ReportMachine.ReportID.In(req.ReportIDs...)).Delete(); err != nil {
-			return err
-		}
-
-		for _, reportInfo := range reportList {
-			// 把mongodb库里面的报告详情数据删掉
-			collection := dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportData)
-			findFilter := bson.D{{"report_id", reportInfo.ReportID}, {"team_id", req.TeamID}}
-			_, err = collection.DeleteOne(ctx, findFilter)
-			if err != nil {
-				log.Logger.Info("report_data：删除失败")
-			}
-
-			// 把mongodb库里面的报告详情数据删掉
-			collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectReportTask)
-			findFilter = bson.D{{"report_id", reportInfo.ReportID}, {"team_id", req.TeamID}}
-			_, err = collection.DeleteOne(ctx, findFilter)
-			if err != nil {
-				log.Logger.Info("report_task：删除失败")
-			}
-
-			// 把mongodb库里面的报告详情数据删掉
-			collection = dal.GetMongo().Database(dal.MongoDB()).Collection(consts.CollectChangeReportConf)
-			findFilter = bson.D{{"report_id", reportInfo.ReportID}, {"team_id", req.TeamID}}
-			_, err = collection.DeleteOne(ctx, findFilter)
-			if err != nil {
-				log.Logger.Info("change_report_conf：删除失败")
-			}
-
-			if err := record.InsertDelete(ctx, req.TeamID, userID, record.OperationOperateDeleteReport, fmt.Sprintf("%s %s", reportInfo.PlanName, reportInfo.SceneName)); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
-	if allErr != nil {
-		log.Logger.Info("DeleteReport：删除失败")
-		return allErr
-	}
-	return nil
-}
-
-func CheckVumNumIsEnough(ctx *gin.Context, req *rao.ChangeTaskConfReq) error {
-	var maybeUseVumNum int64 = 0
-	var teamUsableVumNum int64 = 0
-	allErr := dal.GetQuery().Transaction(func(tx *query.Query) error {
-		// 判断当前团队是否过期
-		teamStatus, err := team.GetTeamIsOverdue(ctx, req.TeamID)
-		if teamStatus == true { // 团队已过期
-			return fmt.Errorf("团队已过期")
-		}
-
-		// 查询当前计划信息
-		planInfo, err := tx.StressPlan.WithContext(ctx).Where(tx.StressPlan.TeamID.Eq(req.TeamID), tx.StressPlan.PlanID.Eq(req.PlanID)).First()
-		if err != nil {
-			return err
-		}
-
-		// 查询当前报告相关信息
-		reportInfo, err := tx.StressPlanReport.WithContext(ctx).Where(tx.StressPlanReport.ReportID.Eq(req.ReportID)).First()
-		if err != nil {
-			return err
-		}
-
-		// 当前报告已经运行的分钟数
-		alreadyRunTimeSec := time.Now().Unix() - reportInfo.CreatedAt.Unix()
-
-		// 持续时长分钟数
-		var runMinute int64 = 0
-		var runTimeTemp int64 = 0
-		if req.ModeConf.Duration != 0 {
-			runTimeTemp = req.ModeConf.Duration + alreadyRunTimeSec
-		} else {
-			runTimeTemp = req.ModeConf.RoundNum + alreadyRunTimeSec
-		}
-		runMinute = int64(math.Ceil(float64(runTimeTemp) / 60))
-
-		if planInfo.TaskType == consts.PlanTaskTypeNormal { // 普通计划
-			// 查询普通计划下面所有任务配置信息
-			taskInfo, err := tx.StressPlanTaskConf.WithContext(ctx).Where(tx.StressPlanTaskConf.SceneID.Eq(reportInfo.SceneID)).First()
-			if err != nil {
-				return fmt.Errorf("没有查到任务配置")
-			}
-
-			// 判断施压模式
-			var vumTemp int64 = 0
-			if taskInfo.TaskMode == consts.PlanModeConcurrence {
-				vumTemp = runMinute * req.ModeConf.Concurrency
-			} else {
-				// 把时长转换为分钟，向上取整
-				req.ModeConf.Duration = req.ModeConf.Duration + alreadyRunTimeSec
-				vumTemp = GetVumTotalNum(*req.ModeConf)
-			}
-			maybeUseVumNum = maybeUseVumNum + vumTemp
-
-		} else { // 定时计划
-			// 查询普通计划下面所有任务配置信息
-			taskInfo, err := tx.StressPlanTimedTaskConf.WithContext(ctx).Where(tx.StressPlanTimedTaskConf.SceneID.Eq(reportInfo.SceneID)).First()
-			if err != nil {
-				return fmt.Errorf("没有查到任务配置")
-			}
-
-			// 判断施压模式
-			var vumTemp int64 = 0
-			if taskInfo.TaskMode == consts.PlanModeConcurrence {
-				vumTemp = runMinute * req.ModeConf.Concurrency
-			} else {
-				// 把时长转换为分钟，向上取整
-				req.ModeConf.Duration = req.ModeConf.Duration + alreadyRunTimeSec
-				vumTemp = GetVumTotalNum(*req.ModeConf)
-			}
-			maybeUseVumNum = maybeUseVumNum + vumTemp
-		}
-
-		// 查询当前团队剩余可用VUM
-		teamInfo, err := tx.Team.WithContext(ctx).Where(tx.Team.TeamID.Eq(req.TeamID)).First()
-		if err != nil {
-			return err
-		}
-		teamUsableVumNum = teamInfo.VumNum
-
-		// 检查vum是否够用
-		if teamUsableVumNum < maybeUseVumNum {
-			return fmt.Errorf("VUM余额不足")
-		}
-		return nil
-	})
-
-	return allErr
-}
-
-func GetVumTotalNum(modeConf rao.ModeConf) int64 {
-	// 把时长转换为分钟，向上取整
-	startConcurrency := modeConf.StartConcurrency
-	maxConcurrency := modeConf.MaxConcurrency
-	stepRunTimeMinute := int64(math.Ceil(float64(modeConf.StepRunTime) / float64(60)))
-	durationMinute := int64(math.Ceil(float64(modeConf.Duration) / float64(60)))
-	step := modeConf.Step
-
-	vumTemp := startConcurrency*stepRunTimeMinute + maxConcurrency*durationMinute
-	for maxConcurrency > startConcurrency {
-		startConcurrency = startConcurrency + step
-		if startConcurrency != maxConcurrency {
-			vumTemp += startConcurrency * stepRunTimeMinute
-		}
-	}
-
-	return vumTemp
 }

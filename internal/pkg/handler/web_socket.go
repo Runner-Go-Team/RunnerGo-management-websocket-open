@@ -7,6 +7,9 @@ import (
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/jwt"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/log"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/biz/response"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/mao"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/query"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/dal/rao"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/autoPlan"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/caseAssemble"
@@ -16,13 +19,19 @@ import (
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/report"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/scene"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/target"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/uiReport"
+	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/uiScene"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/logic/variable"
 	"github.com/Runner-Go-Team/RunnerGo-management-websocket-open/internal/pkg/public"
 	"github.com/gin-gonic/gin"
+	"github.com/go-omnibus/proof"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/net/context"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -43,12 +52,16 @@ type WebSocketReq struct {
 // ClientLinkList 客户端连接信息
 var ClientLinkList = make(map[string]*ClientLink)
 
+// UIEngineTopicMap ui 自动化topic
+var UIEngineTopicMap = make(map[string]struct{})
+
 // ClientLink 链接基本数据结构
 type ClientLink struct {
 	TeamID    string          `json:"team_id"`
 	LinkTime  int64           `json:"link_time"`
 	Token     string          `json:"token"`
 	Websocket *websocket.Conn `json:"websocket"`
+	Mu        sync.Mutex
 }
 
 // ClientTeamAndUserMap 客户端连接团队与用户的映射关系
@@ -59,17 +72,196 @@ func CloseInvalidWbLink() {
 	for {
 		nowTime := time.Now().Unix()
 		for userID, linkInfo := range ClientLinkList {
-			if linkInfo.LinkTime < nowTime-15 {
+			if linkInfo.LinkTime < nowTime-80 {
 				err := linkInfo.Websocket.Close()
 				if err != nil {
 					log.Logger.Error("关闭wb链接--失败，err:", err)
-				} else {
-					delete(ClientLinkList, userID) // 删除客户端连接信息
 				}
+				delete(ClientLinkList, userID) // 删除客户端连接信息
 			}
 		}
-		time.Sleep(30 * time.Second)
+		time.Sleep(80 * time.Second)
 	}
+}
+
+// ConsumerUIEngineResult 消费 UI 自动化结果
+func ConsumerUIEngineResult() {
+	for {
+		ctx := context.Background()
+		keys, err := dal.GetRDB().Keys(ctx, "UiReport:*").Result()
+		if err != nil {
+			log.Logger.Error("ConsumerUIEngineResult--dal.GetRDB().Scan，err:", proof.WithError(err))
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		for _, key := range keys {
+			// 一个 go 消费一个队列
+			if _, ok := UIEngineTopicMap[key]; !ok {
+				UIEngineTopicMap[key] = struct{}{}
+				go func(k string) {
+					handleUIEngineResult(ctx, k)
+				}(key)
+			}
+		}
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func handleUIEngineResult(ctx context.Context, key string) {
+	for {
+		// 设置一个5秒的超时时间
+		dataList, err := dal.GetRDB().BRPop(ctx, 5*time.Second, key).Result()
+		if err == redis.Nil {
+			continue
+		}
+		if err != nil {
+			log.Logger.Error("handleUIEngineResult BRPop err:", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		log.Logger.Info("ConsumerUIEngineResult，dataList:", dataList)
+		// 查询到了数据
+		var resultData *rao.UIEngineResultDataMsg
+		if len(dataList) == 2 {
+			resultMsgString := dataList[1]
+
+			err = json.Unmarshal([]byte(resultMsgString), &resultData)
+			if err != nil {
+				log.Logger.Info("ConsumerUIEngineResult--json转换格式错误，err:", proof.WithError(err))
+				continue
+			}
+
+			// 查询是否存在报告
+			pr := query.Use(dal.DB()).UIPlanReport
+			planReport, _ := pr.WithContext(ctx).Where(pr.ReportID.Eq(resultData.TopicID)).First()
+			if planReport != nil {
+				resultData.IsReport = true
+			}
+
+			// 判断任务是否已经停止
+			redisKey := consts.UIEngineRunAddrPrefix + resultData.TopicID
+			addr, err := dal.GetRDB().Get(ctx, redisKey).Result()
+			if err != nil {
+				log.Logger.Error("ConsumerUIEngineResult--Get UIEngineRunAddrPrefix err:", err)
+			}
+			if len(addr) == 0 {
+				continue
+			}
+
+			var withdraws = make([]*rao.UIEngineDataWithdraw, 0, len(resultData.DataWithdraws))
+			for _, withdraw := range resultData.DataWithdraws {
+				withdraws = append(withdraws, withdraw)
+			}
+			resultData.Withdraws = withdraws
+
+			collectionName := consts.CollectUISendSceneOperator
+			if !resultData.IsReport {
+				collectionName = consts.CollectUISendSceneOperatorDebug
+			}
+			collection := dal.GetMongo().Database(dal.MongoDB()).Collection(collectionName)
+			var teamID string
+			// End 单独结构
+			if resultData.End {
+				// 删除 Redis 对应关系
+				dal.GetRDB().SRem(ctx, consts.UIEngineCurrentRunPrefix+addr, resultData.TopicID)
+				dal.GetRDB().Del(ctx, consts.UIEngineRunAddrPrefix+resultData.TopicID)
+
+				filter := bson.D{{"report_id", resultData.TopicID}}
+				uiSendSceneOperator := &mao.UISendSceneOperator{}
+				if err = collection.FindOne(ctx, filter).Decode(&uiSendSceneOperator); err != nil {
+					log.Logger.Error("ConsumerUIEngineResult--FindOne err:", err)
+				}
+				resultData.SceneID = uiSendSceneOperator.SceneID
+				teamID = uiSendSceneOperator.TeamID
+
+				// 处理报告结束
+				if err = uiReport.HandleReportEnd(ctx, resultData); err != nil {
+					log.Logger.Error("HandleReportEnd--处理报告处理，SceneID:", resultData.SceneID, "report ID:", resultData.TopicID, "err:", err)
+				}
+			} else {
+				// 组织断言结果数据
+				filter := bson.D{
+					{"report_id", resultData.TopicID},
+					{"scene_id", resultData.SceneID},
+					{"operator_id", resultData.OperatorID}}
+				uiSendSceneOperator := &mao.UISendSceneOperator{}
+				if err = collection.FindOne(ctx, filter).Decode(&uiSendSceneOperator); err != nil {
+					log.Logger.Error("ConsumerUIEngineResult--FindOne err:", err)
+				}
+				var a *mao.AssertResults
+				if err := bson.Unmarshal(uiSendSceneOperator.AssertResults, &a); err != nil {
+					log.Logger.Errorf("uiSendSceneOperator.AssertResults bson unmarshal err %w", err)
+				}
+				if len(a.Asserts) == len(resultData.Assertions) {
+					for k, assertion := range resultData.Assertions {
+						assertion.Name = a.Asserts[k].Name
+					}
+				}
+
+				// 是否有多组数据
+				if len(uiSendSceneOperator.ParentID) > 1 {
+					so := query.Use(dal.DB()).UISceneOperator
+					parentScene, _ := so.WithContext(ctx).Where(so.OperatorID.Eq(uiSendSceneOperator.ParentID)).First()
+					if parentScene != nil {
+						if parentScene.Action == consts.UISceneOptTypeForLoop || parentScene.Action == consts.UISceneOptTypeWhileLoop {
+							resultData.IsMulti = true
+						}
+						// for 步骤默认成功
+						if parentScene.Action == consts.UISceneOptTypeForLoop {
+							_ = uiScene.UpdateSimpleParent(ctx, resultData, parentScene.OperatorID)
+						}
+					}
+				}
+
+				uiEngineResultDataMsg, err := uiScene.UpdateReportDataResultMulti(ctx, resultData)
+				if err != nil {
+					log.Logger.Error("UpdateReportData--修改报告数据失败，SceneID:", resultData.SceneID, "userID:", resultData.UserID, "err:", err)
+				}
+				resultData.MultiResult = uiEngineResultDataMsg
+				teamID = uiSendSceneOperator.TeamID
+			}
+
+			// 查询用户连接
+			if l, ok := ClientLinkList[resultData.UserID]; ok {
+				l.Mu.Lock()
+				defer l.Mu.Unlock()
+
+				resp := response.WbSuccessWithData(ctx, resultData, "ui_engine_result")
+				err = l.Websocket.WriteMessage(websocket.TextMessage, []byte(resp))
+				if err != nil {
+					log.Logger.Error("ConsumerUIEngineResult--给用户发送消息失败，SceneID:", resultData.SceneID, "userID:", resultData.UserID, "err:", err)
+					continue
+				}
+			}
+
+			// 报告推团队 场景推用户
+			if resultData.IsReport {
+				if userIDs, ok := ClientTeamAndUserMap[teamID]; ok {
+					for _, userID := range userIDs {
+						if l, ok := ClientLinkList[userID]; ok && userID != resultData.UserID {
+							l.Mu.Lock()
+							defer l.Mu.Unlock()
+
+							resp := response.WbSuccessWithData(ctx, resultData, "ui_engine_result")
+							err = l.Websocket.WriteMessage(websocket.TextMessage, []byte(resp))
+							if err != nil {
+								log.Logger.Error("ConsumerUIEngineResult--给用户发送消息失败，SceneID:", resultData.SceneID, "userID:", resultData.UserID, "err:", err)
+							}
+						}
+					}
+				}
+			}
+
+			if resultData.End {
+				goto end // 跳出两层循环
+			}
+
+		}
+		time.Sleep(5 * time.Second)
+	}
+end: // 定义一个标签
+	log.Logger.Info("ConsumerUIEngineResult end:", key)
+	delete(UIEngineTopicMap, key)
 }
 
 // PushRunningPlanCount 主动推送运行中计划数量的方法
@@ -100,6 +292,9 @@ func PushRunningPlanCount() {
 				for _, userID := range userArr {
 					// 写入ws数据
 					if websocketLink, ok := ClientLinkList[userID]; ok {
+						websocketLink.Mu.Lock()
+						defer websocketLink.Mu.Unlock()
+
 						err = websocketLink.Websocket.WriteMessage(msgType, []byte(resp))
 						if err != nil {
 							log.Logger.Info("运行中计划--给用户发送消息失败，teamID:", teamID, "userID:", userID, "err:", err)
@@ -679,6 +874,9 @@ func DisbandTeamNotice(ctx *gin.Context, wbReq *WebSocketReq) {
 		for _, userID := range userIDs {
 			if websocketLink, ok := ClientLinkList[userID]; ok {
 				resp := response.WbSuccess(ctx, wbReq.RouteUrl)
+				websocketLink.Mu.Lock()
+				defer websocketLink.Mu.Unlock()
+
 				err = websocketLink.Websocket.WriteMessage(msgType, []byte(resp))
 				log.Logger.Info("解散团队--循环发送消息", userID)
 				if err != nil {

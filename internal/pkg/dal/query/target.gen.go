@@ -73,7 +73,7 @@ type target struct {
 	CreatedUserID field.String // 创建人ID
 	RecentUserID  field.String // 最近修改人ID
 	Description   field.String // 备注
-	Source        field.Int32  // 数据来源：0-测试对象，1-场景管理，2-性能，3-自动化测试
+	Source        field.Int32  // 数据来源：0-测试对象，1-场景管理，2-性能，3-自动化测试， 4-mock
 	PlanID        field.String // 计划id
 	SourceID      field.String // 引用来源ID
 	IsChecked     field.Int32  // 是否开启：1-开启，2-关闭

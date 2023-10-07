@@ -36,6 +36,11 @@ func main() {
 		handler.PushRunningPlanCount()
 	}()
 
+	// 消费 UI 自动化结果
+	go func() {
+		handler.ConsumerUIEngineResult()
+	}()
+
 	// 创建 Gin 引擎实例
 	engine := gin.Default()
 	router.RegisterRouter(engine)

@@ -11,6 +11,7 @@ const (
 	ErrInvalidToken                           = 10006
 	ErrMarshalFailed                          = 10007
 	ErrUnMarshalFailed                        = 10008
+	ErrOperationFail                          = 10009
 	ErrMustDID                                = 10011
 	ErrMustSN                                 = 10012
 	ErrHttpFailed                             = 10013
@@ -92,6 +93,7 @@ var CodeAlertMap = map[int]string{
 	ErrInvalidToken:                           "无效的token",
 	ErrMarshalFailed:                          "序列化失败",
 	ErrUnMarshalFailed:                        "反序列化失败",
+	ErrOperationFail:                          "操作失败",
 	ErrRedisFailed:                            "redis操作失败",
 	ErrMongoFailed:                            "mongo操作失败",
 	ErrMysqlFailed:                            "mysql操作失败",
@@ -170,6 +172,7 @@ var CodeMsgMap = map[int]string{
 	ErrInvalidToken:                           "invalid token",
 	ErrMarshalFailed:                          "marshal failed",
 	ErrUnMarshalFailed:                        "unmarshal failed",
+	ErrOperationFail:                          "ErrOperationFail",
 	ErrRedisFailed:                            "redis operate failed",
 	ErrMongoFailed:                            "mongo operate failed",
 	ErrMysqlFailed:                            "mysql operate failed",

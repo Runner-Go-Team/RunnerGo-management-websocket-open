@@ -19,9 +19,13 @@ type StressPlanTimedTaskConf struct {
 	SceneID                 string         `gorm:"column:scene_id;not null" json:"scene_id"`                                     // 场景id
 	TeamID                  string         `gorm:"column:team_id;not null" json:"team_id"`                                       // 团队id
 	UserID                  string         `gorm:"column:user_id;not null" json:"user_id"`                                       // 用户ID
-	Frequency               int32          `gorm:"column:frequency;not null" json:"frequency"`                                   // 任务执行频次: 0-一次，1-每天，2-每周，3-每月
+	Frequency               int32          `gorm:"column:frequency;not null" json:"frequency"`                                   // 任务执行频次: 0-一次，1-每天，2-每周，3-每月，4-固定时间间隔
 	TaskExecTime            int64          `gorm:"column:task_exec_time;not null" json:"task_exec_time"`                         // 任务执行时间
 	TaskCloseTime           int64          `gorm:"column:task_close_time;not null" json:"task_close_time"`                       // 任务结束时间
+	FixedIntervalStartTime  int64          `gorm:"column:fixed_interval_start_time;not null" json:"fixed_interval_start_time"`   // 固定时间间隔开始时间
+	FixedIntervalTime       int32          `gorm:"column:fixed_interval_time;not null" json:"fixed_interval_time"`               // 固定间隔时间
+	FixedRunNum             int32          `gorm:"column:fixed_run_num;not null" json:"fixed_run_num"`                           // 固定执行次数
+	FixedIntervalTimeType   int32          `gorm:"column:fixed_interval_time_type;not null" json:"fixed_interval_time_type"`     // 固定间隔时间类型：0-分钟，1-小时
 	TaskType                int32          `gorm:"column:task_type;not null;default:2" json:"task_type"`                         // 任务类型：1-普通任务，2-定时任务
 	TaskMode                int32          `gorm:"column:task_mode;not null;default:1" json:"task_mode"`                         // 压测模式：1-并发模式，2-阶梯模式，3-错误率模式，4-响应时间模式，5-每秒请求数模式，6 -每秒事务数模式
 	ControlMode             int32          `gorm:"column:control_mode;not null" json:"control_mode"`                             // 控制模式：0-集中模式，1-单独模式

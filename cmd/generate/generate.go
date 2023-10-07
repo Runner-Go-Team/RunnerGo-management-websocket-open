@@ -66,9 +66,18 @@ func main() {
 		g.GenerateModel("stress_plan_report"),
 		g.GenerateModel("stress_plan_email"),
 		g.GenerateModel("stress_plan_timed_task_conf"),
-		g.GenerateModel("target_debug_log"),
 		g.GenerateModel("user_collect_info"),
 		g.GenerateModel("public_function"),
+		g.GenerateModel("element"),
+		g.GenerateModel("ui_scene"),
+		g.GenerateModel("ui_scene_operator"),
+		g.GenerateModel("ui_scene_trash"),
+		g.GenerateModel("ui_scene_element"),
+		g.GenerateModel("ui_plan"),
+		g.GenerateModel("ui_scene_sync"),
+		g.GenerateModel("ui_plan_task_conf"),
+		g.GenerateModel("ui_plan_timed_task_conf"),
+		g.GenerateModel("ui_plan_report"),
 	)
 
 	g.Execute()

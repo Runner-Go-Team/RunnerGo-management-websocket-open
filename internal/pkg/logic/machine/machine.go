@@ -84,15 +84,3 @@ func GetMachineList(ctx *gin.Context, req rao.GetMachineListParam) ([]*rao.Machi
 
 	return res, count, nil
 }
-
-// ChangeMachineOnOff 启用或卸载机器
-func ChangeMachineOnOff(ctx *gin.Context, req rao.ChangeMachineOnOff) error {
-	// 查询机器列表
-	tx := dal.GetQuery().Machine
-	res, err := tx.WithContext(ctx).Where(tx.ID.Eq(req.ID)).Update(tx.Status, req.Status)
-	if err != nil || res.RowsAffected == 0 {
-		proof.Errorf("启用或卸载机器--修改数据库失败，err:", err)
-		return err
-	}
-	return nil
-}
